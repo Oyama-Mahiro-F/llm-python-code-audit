@@ -98,16 +98,37 @@ $PY -m unittest discover -s auditor/tests -v
 `records/audit_report.json / .md`、`records/run_demo/<alert_id>/`(snippet、
 mock、payload、harness、env_snapshot、stdout/stderr、exit_code)。
 
-## 五、SWE-ReX 接入状态(如实记录)
+## 五、SWE-ReX 接入状态(**2026-11-13 已验证通过**)
 
-- `swe-rex 1.4.0` 已安装,`DockerDeployment` 可正常导入与构造;
-- 冒烟测试(`smoke_swerex.py`)在本开发会话中**失败于 docker 命名管道
-  权限**——ZCode 会话沙箱不允许 Python 子进程访问 Docker 管道
-  (与编排器直连模式 `run` 受限是同一根因),**并非 SWE-ReX 本身不可用**;
-- 沙箱执行已按风险预案 **R2(降级为 `docker run` 直接驱动)**验证通过,
-  执行语义与 SWE-ReX Docker 后端一致;
-- 在无此限制的环境(Linux / WSL2 终端)执行 `$PY smoke_swerex.py`
-  即可完成接入验证,列为下一步工作。
+冒烟测试输出 **`SWE_REX_SMOKE: OK`**：运行时启动 0.95 s，容器内执行
+`echo hello-swerex && python -V` 返回 exit_code=0。
+
+接入过程中定位并解决了三个环境问题（均有实测依据）：
+
+| # | 问题 | 现象 | 解决 |
+|---|---|---|---|
+| 1 | **Windows 命名管道权限** | Python 子进程调用 `docker` 报 `permission denied ... npipe:////./pipe/dockerDesktopLinuxEngine`；同一命令从 shell 调用正常。细化实测：`docker --version` / `context ls` 从 Python **可跑**，只有「连守护进程」被拒 | Docker Desktop 开启 **Expose daemon on tcp://localhost:2375 without TLS**，运行时设 `DOCKER_HOST=tcp://127.0.0.1:2375` |
+| 2 | **容器内无法访问 pypi.org** | SWE-ReX 启动命令回退到 `pip install pipx`，容器内 SSL 握手失败（网络拦截） | 自建镜像 `swerex-runner:1.4.0` 预装 swe-rex（经清华镜像），见 `docker/swerex.Dockerfile` |
+| 3 | **swe-rex 1.4.0 API 变更** | `Runtime.execute()` 接收 `Command` **模型**而非字符串，传 str 报 `'str' object has no attribute 'model_dump'` | `smoke_swerex.py` 改用 `Command(command=..., shell=True)` |
+
+**架构定位（当前）**：
+
+- **主流程沙箱执行**仍由 `sandbox.py` 直接 `subprocess docker run` 驱动（原 R2 路径）：
+  三阶段 `prepare → shell → collect` 与**一体化 `run`** 两种模式均可用；
+- **SWE-ReX 作为已验证的容器调度层保留**；接入主流程需改造 `sandbox.py`，
+  当前无必要（隔离原语同为容器，执行语义一致）。
+
+**复现命令**：
+
+```powershell
+$env:DOCKER_HOST  = "tcp://127.0.0.1:2375"
+$env:SWEREX_IMAGE = "swerex-runner:1.4.0"
+docker build -f docker/swerex.Dockerfile -t swerex-runner:1.4.0 docker   # 首次
+.venv\Scripts\python.exe smoke_swerex.py
+```
+
+> **安全提示**：2375 端口无 TLS，本机任何程序可完全控制 Docker。
+> 仅在课程实验期开启，用毕在 Docker Desktop 设置里关闭；或改用 WSL2（Unix socket，无此问题）。
 
 ## 六、候选发现扩展:LLM 作为第二来源(2026-10-30 新增)
 
