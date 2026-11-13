@@ -176,7 +176,9 @@ mock_code 必须含 `CAPTURED = {"sink_api", "calls"}` 与 `_install_mock()`,pay
 
 **重试闭环**(orchestrator 新增 `regen` 子命令,方案 4.3.5):TP 不动;FP 且建议改
 payload → 仅换 payload、复用现有 harness(省一次生成);FP/未确认且建议改 mock →
-带上一轮 reason+stderr 反馈重新生成并重新组装;上限 3 轮、单告警 LLM 预算 12 次;
+带上一轮 reason+stderr 反馈重新生成并重新组装;**建议改环境(镜像缺失/沙箱不可用)→
+不重试**,直接维持上一轮判定(环境问题重试无意义,避免浪费 LLM 预算);上限 3 轮、
+单告警 LLM 预算 12 次;
 重试产物入 `attempt_N/` 子目录,轨迹写 `retry_trace.jsonl`。
 
 **实测(2026-11-06,run_llmmock,真实 DeepSeek)**:

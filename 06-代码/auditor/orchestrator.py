@@ -348,6 +348,12 @@ def cmd_regen(args) -> int:
                 encoding="utf-8")
 
         fix = v.get("fix_suggestion") or "改 mock"
+        # 环境问题(镜像缺失 / 沙箱不可用)重试无意义:直接维持上一轮判定,
+        # 不进入 mock 重生分支,避免浪费 LLM 预算。
+        if fix == "改环境":
+            print(f"[regen] {st['alert_id']}: 环境问题,不重试,维持 "
+                  f"{v.get('verdict')}({str(v.get('reason') or '')[:50]})")
+            continue
         feedback = f"verdict={v.get('verdict')};reason={v.get('reason')}"
         stderr_tail = ((st.get("run") or {}).get("stderr_tail") or "").strip()
         if stderr_tail:
