@@ -1,0 +1,361 @@
+Skip to main content Skip to Ask Learn chat experience
+
+This browser is no longer supported.
+
+Upgrade to Microsoft Edge to take advantage of the latest features, security updates, and technical support.
+
+Download Microsoft Edge More info about Internet Explorer and Microsoft Edge
+
+Table of contents Exit editor mode
+
+Ask Learn Ask Learn
+Reading mode Table of contents Read in English Add Add to Plans Edit Copy Markdown Print
+
+Note
+
+Access to this page requires authorization. You can try signing in or changing directories .
+
+Access to this page requires authorization. You can try changing directories .
+
+Agent components
+
+Feedback
+
+Summarize this article for me
+
+Important
+
+Some information in this article relates to a prereleased product which may be substantially modified before it's commercially released. Microsoft makes no warranties, express or implied, with respect to the information provided here.
+
+This article provides a conceptual overview of the key components that define how custom Security Copilot agents function, helping you understand their structure, behavior, and operational logic.
+
+Agent
+
+An agent in Security Copilot is a self contained semi or fully autonomous computational entity that works to achieve a specific goal. It's defined by its ability to perceive and react to its environment, make decisions, and produce outcomes to meet its objective. The design of an agent informs the agent on how to achieve its goal by deciding what capabilities to use whether that's a Large Language Model (LLM), connected tools (also referred to as skills), or both. The agent’s decisions are guided by its inputs and instructions, which could cause the agent to use predefined logic, or prompt an LLM to interpret and act on those instructions.
+
+Agents are activated via a trigger, which creates an agent run, and executes each step (or task) until an outcome is achieved. Throughout the agent run, based on the instructions, it decides between leveraging an LLM or a connected tool to complete a task.
+
+Agents can interact with tools, external resources beyond the LLM and agent instructions, using one of two selection strategies:
+
+Static tool : A fixed set of resources available for the agent to call, as listed in the agent definition, for an individual step or the entire agent run. When defined this way, the LLM within an agent cannot decide to call any tools outside of what is defined. This improves speed and also the relevancy of tool results. A threat intelligence agent that should invoke predefined sources could be designed this way.
+
+Dynamic tool : Tool calls are selected during the agent run based on context, reasoning, or inputs to the agent. Tools made available to the agent can be introduced in runtime. Agents that need to be reactive to conditions encountered in an agent run could be designed this way. For example, an agent that enriches an entity could run differently based on the entity type provided as an input to the agent.
+
+Developers and Security Copilot users can design agents using either approach to tool selection based on the goal of the agent. The goal also helps inform whether the outcome of the agent serves an individual, team, or organization. As agents run using an identity, the scope of the outcome and the permissions of the identity should be aligned.
+
+Whether you're building a simple alert triage agent or orchestrating a multi-agent system for complex investigations, this article provides the foundational knowledge you need to work with the Security Copilot agent framework from tool selection and manifest design to trigger configuration and governance.
+
+Instructions
+
+Instructions are directions given to an agent to define its goals, inform its decision making, and detail its outcome. For example, you can tell a triage agent to focus on high-severity incidents, or guide a data agent to only pull information that follows certain rules. Instructions help agents stay accurate and consistent.
+
+Tool
+
+A tool (also referred to as a skill) is a resource accessed outside of the agent instructions and LLM that a Security Copilot agent can invoke to help complete its outcome. Think of a tool as a function in a traditional programming language. It has a name, a few arguments, and when invoked it carries out a well defined task and returns a result.
+
+Users can create the desired tools that Security Copilot can call to perform specialized tasks or interact with external systems.
+
+For example:
+
+Answer resolution or reputation questions about an entity not seen before such as 'Who registered www.contoso.com?'
+
+Answer questions about any customer-specific data such as 'Incident 1234 impacts which users?'
+
+Interact with external systems such as 'Reset the account password for 'testaccount@contoso.com'.
+
+Retrieve customer specific knowledge from a knowledge source such as SharePoint.
+
+Plugin
+
+A collection of related tools that users can enable in Security Copilot when relevant to creating new prompting, promptbook, or agentic capabilities. For agents, plugins extend what an agent can do by giving it access to resources outside of an agent and LLM. An example is a plugin that uses an API to connect to an external service such as reputation lookup, where underlying tool definitions for the plugin could return a reputation score, related malware, threat intelligence, etc.
+
+Tool formats
+
+Security Copilot platform supports multiple ways to author and host tools (skills) to suit various needs. You can build agents using any of the supported skills. The supported tool formats are as follows:
+
+Tool Format
+
+Best for
+
+Example use case
+
+API
+
+Integrating external or internal systems
+
+Automate password resets, fetch threat intel from APIs, trigger remediation workflows
+
+GPT
+
+Provides definitions for natural language processing that aren't available natively in underlying LLMs.
+
+Domain specific definitions, summarize incidents in unique formats
+
+KQL
+
+Querying Microsoft data sources (Microsoft Defender, Microsoft Sentinel)
+
+Retrieve sign-in logs, detect anomalies
+
+AGENT
+
+Orchestrating multi-step workflows using Large Language Models (LLMs) and child tools
+
+Understand the hosting situation of a URL, , chain multiple tools for investigation.
+
+MCP
+
+Dynamic, multi‑tool integrations exposed by an MCP server; Security copilot discovers tools at runtime.
+
+Aggregating threat intel or orchestrating remediation across several tools via MCP server.
+
+Agent definition
+
+The agent definition serves as the blueprint for an agent and is a key component of the manifest file. It is one of the top-level keys in the manifest and specifies the agent's core configuration, capabilities, and behavior. It specifies:
+
+Descriptive/metadata details (for example: name, description).
+
+Trigger definitions describing what events cause the agent to run.
+
+Associated tools or tool references that the agent uses to complete its work.
+
+As a Security Copilot developer, the agent definitions you create are available for the Analysts to run and see the results.
+
+Agent instance
+
+An agent instance is the deployed version of an agent definition within a particular workspace. Each instance:
+
+Maintains its own identity or credentials.
+
+Stores instance-specific memories and feedback.
+
+Multiple tenants and workspaces can have their own instance of the same agent definition. Configuration changes or memory updates for one instance don't impact others.
+
+Manifest
+
+The manifest defines the agent's definition, identity, tools, and operational logic in a structured YAML or JSON format. Similar to a configuration file in traditional software systems, the manifest specifies:
+
+The agent's unique purpose and tasks
+
+General operating guidelines
+
+Decision-making logic
+
+The tools it must invoke
+
+Other agents it may call during execution
+
+The manifest includes metadata (Agent definitions and skills) the agent can use, how those skills are grouped, and what actions it can perform. The manifest file is packaged and deployed as part of the agent's workflow on the Security Copilot platform. SOC analysts interact with the agent through the Security Copilot platform and the agent responds to prompts or events based on the manifest configuration and tool logic.
+
+Note
+
+In the examples, the YAML format is listed because it's clearer for humans to read, and can include comments, but either format works equally well. The JSON format is identical to the YAML format but uses the JSON syntax instead.
+
+Agent YAML
+
+This is an example of a sample manifest.yaml file.
+
+```
+Descriptor:
+Name: Contoso.SecurityOperations.Samples-090925
+Description: DCA URL Geolocation Agent
+DisplayName: DCA URL Geolocation Agent
+
+SkillGroups:
+- Format: AGENT
+Skills:
+- Name: URL_Location_DCA_Agent_Entrypoint-090925
+Description: The entrypoint into the URL Location Agent
+Interfaces:
+- Agent
+Inputs:
+- Required: true
+Name: URL
+Description: A URL the agent should investigate
+Settings:
+Model: gpt-4.1
+Instructions: |
+<|im_start|>system
+You are an AI agent that helps a security analyst understand the hosting situation of a URL (the input).
+You'll do this by following a three-step process:
+1) Use ExtractHostname to find the hostname from the URL provided as input
+2) Use GetDnsResolutionsByIndicators to extract IP Addresses that the hostname has been observed resolving to. This may produce a list of IP Addresses.
+3) One-at-a time, use lookupIpAddressGeolocation to look up the geolocation of an IP address.
+
+Produce a simply formatted response telling the security analyst which locations that URL is being served from.
+If you encounter an error share that.
+Always return something the user knows that something happened.
+
+<|im_end|>
+<|im_start|>user
+{{URL}}
+<|im_end|>
+
+ChildSkills:
+- lookupIpAddressGeolocation
+- ExtractHostname_DCA-090925
+- GetDnsResolutionsByIndicators
+- Format: GPT
+Skills:
+- Name: ExtractHostname_DCA-090925
+DisplayName: ExtractHostname_DCA-090925
+Description: ExtractHostname_DCA-090925
+Inputs:
+- Name: URL
+Description: A URL string
+Required: true
+Settings:
+ModelName: gpt-4.1
+Template: |-
+<|im_start|>system
+Return the hostname component of the URL provided as input. For example:
+- If the input is 'https://www.mlb.com/', return 'www.mlb.com'
+- If the input is 'http://dev.mycompany.co.uk/sign-up/blah?a=12&b=12&c=32#23', return 'dev.mycompany.co.uk'
+- If the input is 'ftp:/x.espon.com', return 'x.espon.com'
+<|im_end|>
+<|im_start|>user
+{{URL}}
+<|im_end|>
+- Format: KQL
+Skills:
+- Name: RecentUrlClicks_DCA-090925
+Description: Returns 10 recently clicked URLs
+Settings:
+Target: Defender
+Template: UrlClickEvents | sort by TimeGenerated desc | limit 10 | project Url
+
+AgentDefinitions:
+- Name: URLLocationAgent-090925
+DisplayName: URLLocationAgent
+Description: An agent to help an analyst understand URL hosting
+Publisher: Contoso
+Product: SecurityOperations
+RequiredSkillsets:
+- Contoso.SecurityOperations.Samples-090925
+- ThreatIntelligence.DTI
+- DCA_SampleAPIPlugin
+AgentSingleInstanceConstraint: None
+Settings:
+- Name: LookbackWindowMinutes
+Label: Max Lookback Window in minutes
+Description: The maximum number of minutes to find clicked URLs
+HintText: You should probably enter 5
+SettingType: String
+Required: true
+Triggers:
+- Name: Default
+DefaultPeriodSeconds: 300
+FetchSkill: Contoso.SecurityOperations.Samples-090925.RecentUrlClicks_DCA-090925
+ProcessSkill: Contoso.SecurityOperations.Samples-090925.URL_Location_DCA_Agent_Entrypoint-090925
+```
+
+The agent follows a three-step process to invoke the child skills:
+
+ExtractHostname : Uses the GPT tool ExtractHostname_DCA-090925 to parse the hostname from the URL.
+
+GetDnsResolutionsByIndicators : Uses the Microsoft Threat Intelligence skill set to retrieve the IP addresses associated with the hostname. You must enable the plugin under Manage sources > Custom. Ensure that RequiredSkillsets: ThreatIntelligence.DTI must be added without which GetDnsResolutionsByIndicators tool isn't invoked.
+
+lookupIpAddressGeolocation : Is the operationId in the OpenAPI specification, which is referenced in the API plugin DCA_SampleAPIPlugin to look up geolocation data for each IP address. For reference, see Build API sample .
+
+Trigger
+
+A trigger is what starts an agent's workflow. It can be started manually or set to run on a schedule. Once the trigger is activated, the agent follows its plan and carries out the actions automatically.
+
+Agents operate based on a structured plan of action and execute on that plan. For example, a phishing triage agent may determine which tools or other agents to invoke from its set of pre-configured capabilities. The tools such as FetchSkill and ProcessSkill defined in the trigger, serve as entry points into the agent's workflow guiding the task execution.
+
+In the following example:
+
+```
+Triggers:
+- Name: Default
+DefaultPeriodSeconds: 300
+FetchSkill: Contoso.SecurityCopilot.Samples-090925_1b.RecentUrlClicks_DCA-090925_1b
+ProcessSkill: Contoso.SecurityCopilot.Samples-090925_1b.URL_Location_DCA_Agent_Entrypoint-090925_1b
+Settings:
+```
+
+Every 5 minutes, the RecentUrlClicks_DCA-090925_1b is invoked to get new data.
+
+Then, the ProcessSkill URL_Location_DCA_Agent_Entrypoint-090925_1b is invoked on each returned item to act on the data.
+
+Each of these cycles is a trigger execution, and each call to the ProcessSkill is a trigger run. These skill invocations execute in sessions that are associated with the agent instance and trigger, and use the agent's associated identity.
+
+FetchSkill and ProcessSkill
+
+FetchSkill
+
+When a trigger is activated on a agent run, the FetchSkill if configured gathers data. ProcessSkill defines how agents act on that data during execution. Once the data is fetched, the ProcessSkill takes over, using that data as input to perform specific actions or analysis. These two components work in tandem to enable dynamic, data-driven workflows. If the FetchSkill value is set, the trigger first invokes the FetchSkill.
+
+Important
+
+Fetch and ProcessSkills must be namespaced by skillset. They must follow the format Skillset name.Skill name .
+
+From the example for Triggers:
+
+Skill name = RecentUrlClicks_DCA
+
+Skillset name = Descriptor.name ; For example, Contoso.SecurityCopilot.Samples-090925_1b
+
+The fully qualified skill name = Contoso.SecurityCopilot.Samples-090925_1b.RecentUrlClicks_DCA
+
+ProcessSkill
+
+If a FetchSkill is defined, for each output object the ProcessSkill is called using the output values as inputs for the ProcessSkill. If a FetchSkill isn't defined, the ProcessSkill gets invoked.
+
+```
+{
+[
+{
+"Incident": 1,
+"name": "Item One",
+"created_at": "2024-02-17T12:34:56Z"
+},
+{
+"Incident": 2,
+"name": "Item Two",
+"created_at": "2024-02-17T12:35:30Z"
+},
+{
+"Incident": 3,
+"name": "Item Three",
+"created_at": "2024-02-17T12:36:10Z"
+}
+]
+}
+```
+
+In the example, the ProcessSkill gets called three times with Incident , name , and created_at as inputs.
+
+Workspace
+
+A container for work. Agents operate within the context of a workspace. Workspace provides a unit of control for access, configuration, consumption and data handling.
+
+Memory
+
+Memory allows agents to retain context across interactions, enabling more intelligent and personalized responses. By storing relevant information such as past actions, user preferences, or incident history, agents can deliver continuity and improve decision-making over time.
+
+Feedback
+
+Was this page helpful?
+
+Yes No No
+
+Need help with this topic?
+
+Want to try using Ask Learn to clarify or guide you through this topic?
+
+Ask Learn Ask Learn
+Suggest a fix?
+
+Additional resources
+
+Last updated on 2026-01-12
+
+Was this page helpful?
+
+Need help with this topic?
+
+Want to try using Ask Learn to clarify or guide you through this topic?
+
+Ask Learn Ask Learn
+Suggest a fix?

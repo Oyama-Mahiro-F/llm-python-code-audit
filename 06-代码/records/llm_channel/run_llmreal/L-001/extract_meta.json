@@ -1,0 +1,29 @@
+{
+  "ok": true,
+  "file": "D:\\university_learning\\4.1\\信息安全工程概论\\06-代码\\samples\\vuln_cwe89_user_dao.py",
+  "sink_line": 19,
+  "sink_function": "get_user",
+  "module_constants": [
+    "DB_PATH = \"app.db\""
+  ],
+  "functions": [
+    {
+      "name": "open_db",
+      "start_line": 11,
+      "end_line": 13,
+      "is_sink": false
+    },
+    {
+      "name": "get_user",
+      "start_line": 16,
+      "end_line": 21,
+      "is_sink": true
+    }
+  ],
+  "direct_calls": [
+    "open_db"
+  ],
+  "unresolved_calls": [],
+  "cross_file_missing": false,
+  "snippet_path": "records/llm_channel/run_llmreal/L-001/snippet.py"
+}

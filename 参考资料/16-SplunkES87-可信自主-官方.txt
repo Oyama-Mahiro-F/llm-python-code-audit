@@ -1,0 +1,139 @@
+Splunk Enterprise Security 8.7: Bringing Trusted Autonomy to the SOC
+Artificial Intelligence September 30, 2026 Abhik Mitra
+
+Key takeaways
+
+Splunk Enterprise Security 8.7 helps SOC teams move from AI-assisted investigation toward governed autonomous response.
+
+New and enhanced capabilities help teams scale analyst capacity, expand governed automation, improve detection workflows, and connect security context across the ecosystem.
+
+Splunk is advancing the Agentic SOC with trusted AI that is grounded in evidence, approvals, policy, auditability, and human accountability.
+
+A New Step Toward Trusted Autonomy
+
+Security teams do not need another disconnected AI assistant. They need AI that can operate inside the way the SOC already works: with the right data, the right context, the right permissions, and the right human oversight.
+
+That is the story of Splunk Enterprise Security 8.7 .
+
+This release advances the Agentic SOC by helping customers scale analyst capacity, automate repeatable work, and govern autonomous action. Instead of treating AI as a separate experience, Splunk brings AI into the operational fabric of the SOC: detection, investigation, response, automation, workflow building, and governance.
+
+The result is a practical path to trusted autonomy. AI can carry more of the repetitive, time-sensitive work, while analysts stay focused on judgment, accountability, and the decisions that matter most.
+
+From Assistance to Action
+
+One of the most important updates in Splunk Enterprise Security 8.7 is the next step for the AI SOC Analyst.
+
+The AI SOC Analyst can now use investigation and response-plan context to help teams move from alert to action. It can execute permitted actions, complete response tasks, and recommend next steps when analyst approval is required.
+
+That is a meaningful shift. The SOC no longer has to stop at faster investigation. It can begin moving into governed response, where AI helps advance the workflow but does not remove the controls security leaders require.
+
+For analysts, this means fewer repetitive response steps. For SOC leaders, it means greater consistency. For the business, it means a faster path from signal to action.
+
+Governed Automation Gets Easier to Scale
+
+Autonomy depends on automation, but automation has historically been difficult to build, maintain, and scale. It often requires specialized expertise, custom connectors, and deep playbook knowledge.
+
+Splunk Enterprise Security 8.7 helps reduce that friction.
+
+Connector Builder Agent helps teams generate, test, and refine connectors faster, making it easier to extend automation across the tools the SOC already uses. Automation Builder enhancements improve understanding of playbook sessions and ES finding context, helping teams apply and verify changes more accurately.
+
+This matters because the Agentic SOC is not only about what AI can recommend. It is about how teams safely turn those recommendations into repeatable, governed workflows.
+
+Detection Workflows Become More Reliable
+
+Detection engineering remains a critical part of defending at machine speed. Teams need to build coverage quickly, tune detections confidently, and reduce noise without losing quality.
+
+With Splunk Enterprise Security 8.7 , Detection Builder Agent includes improved reliability and accuracy when creating and refining detections, with better SPL guidance and validation.
+
+For detection teams, that means AI can help accelerate the work without turning detection engineering into a black box. Experts remain in control, while the process becomes faster, more consistent, and easier to scale.
+
+Security Context Moves Across the Ecosystem
+
+The SOC does not operate in one tool. Analysts need context from alerts, entities, findings, users, assets, response plans, threat intelligence, automation tools, and the broader security stack.
+
+That is why ecosystem connectivity is central to the Agentic SOC .
+
+Enterprise Security on MCP helps AI applications securely access ES investigation context, including alerts, entities, findings, and supporting data. This gives teams a more standardized way to connect AI-assisted workflows to the security context that lives in Splunk.
+
+Combined with Splunk’s open ecosystem, Cisco portfolio context, SOAR workflows, UEBA, and broad third-party integrations, Splunk Enterprise Security 8.7 helps customers bring insight and action closer together.
+
+A Cleaner Way to Work
+
+AI is only useful if it fits into the analyst experience.
+
+Splunk Enterprise Security 8.7 includes an updated ES navigation experience designed to help teams organize work around how they operate. Updates include customizable icons, team-based queue switching, saved views, consolidated panels, and streamlined layouts.
+
+The release also adds View Change History, giving teams deeper visibility into analyst activity with complete change history available in SPL search.
+
+These updates may sound simple, but they matter. Trusted autonomy depends on clarity: what happened, who changed it, what evidence supported it, and how the workflow moved forward.
+
+Why It Matters
+
+The Agentic SOC is becoming more tangible with each release.
+
+In Splunk Enterprise Security 8.7 , Splunk is helping customers take a practical next step: from faster investigation to governed response, from manual automation work to easier workflow and connector building, and from isolated AI assistance to ecosystem-connected security context.
+
+The goal is not AI for AI’s sake. The goal is to help security teams defend autonomously with trusted agents and human governance, stop attacks at the source with connected visibility and controls, and mitigate critical exposure with better context and faster action.
+
+That is what trusted autonomy should look like: AI doing more of the repetitive work, analysts staying in control, and the SOC moving faster with confidence.
+
+Availability
+
+Splunk Enterprise Security 8.7 was released on September 2, 2026. Capabilities vary by edition and deployment model. To enable AI SOC Analyst capabilities, contact your Splunk representative.
+
+Learn more in the Splunk Enterprise Security 8.7 release notes and explore Splunk’s vision for the Agentic SOC .
+
+Sources used: Splunk Enterprise Security 8.7 release notes , Splunk AI in Security , and the ES 8.6 blog format .
+
+/en_us/blog/fragments/state-of-security
+
+style
+
+two-column
+
+Title
+
+Related Articles
+
+Filter
+
+Category
+
+Blog Limit
+
+3
+
+Category
+
+security
+
+Sort Category Shuffle Order
+
+true
+
+Related Articles
+
+Security
+4 Minute Read
+
+Advanced Link Analysis: Part 2 - Implementing Link Analysis
+
+Learn how to step-by-step process to building the dashboard with Sigbay Link Analysis visualization app from scratch.
+
+Security
+11 Minute Read
+
+Hunting M365 Invaders: Navigating the Shadows of Midnight Blizzard
+
+The Splunk Threat Research Team outlines the attack chain detailed in the Microsoft blog, offering practical detection and hunting tips for cybersecurity defenders.
+
+Security
+3 Minute Read
+
+Splunk Attack Range Now With Caldera and Kali Linux
+
+An overview of the updates the Splunk Security Research Team has been working on for Splunk Attack Range, now with Caldera adversarial simulation framework and Kali Linux
+
+/en_us/blog/fragments/about-splunk
+
+/en_us/blog/fragments/perspectives-promo

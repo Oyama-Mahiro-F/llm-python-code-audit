@@ -1,0 +1,19 @@
+{
+  "llm_backend": "deepseek",
+  "llm_model": "deepseek-chat",
+  "llm_calls": 1,
+  "prompt_version": "v1-2026-11-06",
+  "attempt": 1,
+  "sink_function": "get_user",
+  "llm_raw_chars": 664,
+  "ok": true,
+  "generated_by": "llm(deepseek)",
+  "mock_code": "CAPTURED = {'sink_api': 'sqlite3.Cursor.execute', 'calls': []}\n\nclass _FakeCursor:\n    def execute(self, sql=None, params=None):\n        CAPTURED['calls'].append({'args': str(sql), 'sanitized': params is not None})\n        return self\n    def fetchone(self):\n        return None\n\nclass _FakeConn:\n    def cursor(self):\n        return _FakeCursor()\n    def close(self):\n        return None\n\ndef _install_mock():\n    import sqlite3\n    sqlite3.connect = lambda *a, **k: _FakeConn()",
+  "payload": "zxq-demo-marker' OR '1'='1",
+  "imports": [
+    "import sqlite3"
+  ],
+  "rationale": "掉包 sqlite3.connect 返回假连接/游标，execute 仅记录 SQL 字符串与是否参数化，不触碰真实数据库",
+  "mock_path": "records/run_llmmock/L-003/mock_patch.py",
+  "payload_path": "records/run_llmmock/L-003/payload.txt"
+}

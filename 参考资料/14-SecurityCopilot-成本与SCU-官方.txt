@@ -1,0 +1,112 @@
+Skip to main content Skip to Ask Learn chat experience
+
+This browser is no longer supported.
+
+Upgrade to Microsoft Edge to take advantage of the latest features, security updates, and technical support.
+
+Download Microsoft Edge More info about Internet Explorer and Microsoft Edge
+
+Table of contents Exit editor mode
+
+Ask Learn Ask Learn
+Reading mode Table of contents Read in English Add Add to Plans Edit Copy Markdown Print
+
+Note
+
+Access to this page requires authorization. You can try signing in or changing directories .
+
+Access to this page requires authorization. You can try changing directories .
+
+Cost considerations for Security Copilot
+
+Feedback
+
+Summarize this article for me
+
+Important
+
+Some information in this article relates to a prereleased product which may be substantially modified before it's commercially released. Microsoft makes no warranties, express or implied, with respect to the information provided here.
+
+Before you start building security agents, it's important to understand the associated licensing and consumption costs. This article outlines the cost considerations for Microsoft Security Copilot.
+
+Security compute units
+
+Security compute units (SCUs) are the required units of resources that are needed for dependable and consistent performance of Microsoft Security Copilot.
+
+The following are the minimum requirements to help you get started to create an agent:
+
+Security Copilot access that includes needing SCUs. For more information, see Get started with Security Copilot .
+
+Azure subscription to purchase security compute units.
+
+Guidance on SCU consumption
+
+This section outlines when SCUs are consumed based on how agents are created, tested, or published.
+
+Action
+
+SCUs Consumed
+
+Description
+
+Creating an agent using natural language (NL2Agent) via Agent builder form
+
+No
+
+Does not spin SCUs
+
+NL2Agent via MCP
+
+No
+
+Does not spin SCUs
+
+Agent builder form
+
+No
+
+Does not spin SCUs
+
+Agent created elsewhere without Security Copilot tools
+
+No
+
+External agent creation does not trigger SCU consumption
+
+Test agents
+
+Yes
+
+Always spins SCUs
+
+Publish agents
+
+No
+
+Does not spin SCUs
+
+Feedback
+
+Was this page helpful?
+
+Yes No No
+
+Need help with this topic?
+
+Want to try using Ask Learn to clarify or guide you through this topic?
+
+Ask Learn Ask Learn
+Suggest a fix?
+
+Additional resources
+
+Last updated on 2025-09-30
+
+Was this page helpful?
+
+Need help with this topic?
+
+Want to try using Ask Learn to clarify or guide you through this topic?
+
+Ask Learn Ask Learn
+Suggest a fix?

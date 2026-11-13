@@ -1,0 +1,40 @@
+{
+  "dataset": "demo-samples",
+  "generated_at": "2026-11-08T18:30:32.391142+00:00",
+  "source": "self-built(作者即标注者)",
+  "license": "MIT(自建)",
+  "ground_truth_mode": "样本级真值:文件名区分漏洞/安全对照",
+  "sampling": "固定随机种子(接入真实数据集后启用;演示样本为全集)",
+  "filter_rules": "无(自建样本全量;真实数据集接入时记录过滤规则与前后样本数)",
+  "n_files": 4,
+  "files": [
+    {
+      "file": "safe_cwe89_user_dao.py",
+      "language": "python",
+      "lines": 18,
+      "functions": 2,
+      "cwe_label": "见文件名(vuln_cweXX 命名约定)"
+    },
+    {
+      "file": "vuln_cwe22_path.py",
+      "language": "python",
+      "lines": 8,
+      "functions": 1,
+      "cwe_label": "见文件名(vuln_cweXX 命名约定)"
+    },
+    {
+      "file": "vuln_cwe78_cmd.py",
+      "language": "python",
+      "lines": 9,
+      "functions": 1,
+      "cwe_label": "见文件名(vuln_cweXX 命名约定)"
+    },
+    {
+      "file": "vuln_cwe89_user_dao.py",
+      "language": "python",
+      "lines": 22,
+      "functions": 2,
+      "cwe_label": "见文件名(vuln_cweXX 命名约定)"
+    }
+  ]
+}

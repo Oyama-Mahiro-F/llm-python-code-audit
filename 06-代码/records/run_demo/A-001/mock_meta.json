@@ -1,0 +1,13 @@
+{
+  "ok": true,
+  "template": "sqlite3.Cursor.execute",
+  "llm_backend": null,
+  "generated_by": "template(fixed);LLM 接入点预留,接入前完全确定",
+  "payload": "zxq-demo-marker' OR '1'='1",
+  "imports": [
+    "import sqlite3"
+  ],
+  "sink_function": "get_user",
+  "mock_path": "records/run_demo/A-001/mock_patch.py",
+  "payload_path": "records/run_demo/A-001/payload.txt"
+}

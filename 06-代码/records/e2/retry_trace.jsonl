@@ -1,0 +1,1 @@
+{"alert_id": "L-001", "round": 2, "branch": "改 mock", "attempt_dir": "records/e2/run_e2_B/L-001/attempt_2", "verdict": "TP", "reason": "payload ../../etc/passwd-zxq-demo-marker 经字符串拼接到达 builtins.open，路径穿越至 /var/data/../../etc/passwd-zxq-demo-marker，运行证据表明未做规范化或校验，构成路径穿越漏洞"}

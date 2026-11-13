@@ -1,0 +1,33 @@
+{
+  "tool": "semgrep",
+  "version": "1.182.1",
+  "config": "p/default",
+  "backend": "docker(external)",
+  "ok": true,
+  "errors_from_tool": [],
+  "generated_at": "2026-11-05T19:19:24.731857+00:00",
+  "alerts": [
+    {
+      "alert_id": "A-001",
+      "check_id": "python.lang.security.audit.formatted-sql-query.formatted-sql-query",
+      "path": "/src/vuln_cwe89_user_dao.py",
+      "line": 20,
+      "col": 5,
+      "end_line": 20,
+      "cwe": "CWE-89",
+      "message": "Detected possible formatted SQL query. Use parameterized queries instead.",
+      "metavars": null
+    },
+    {
+      "alert_id": "A-002",
+      "check_id": "python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query",
+      "path": "/src/vuln_cwe89_user_dao.py",
+      "line": 20,
+      "col": 5,
+      "end_line": 20,
+      "cwe": "CWE-89",
+      "message": "Avoiding SQL string concatenation: untrusted input concatenated with raw SQL query can result in SQL Injection. In order to execute raw query safely, prepared statement should be used. SQLAlchemy provides TextualSQL to easily used prepared statement with named parameters. For complex SQL composition, use SQL Expression Language or Schema Definition Language. In most cases, SQLAlchemy ORM will be a better option.",
+      "metavars": null
+    }
+  ]
+}

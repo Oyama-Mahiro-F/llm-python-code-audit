@@ -1,0 +1,8 @@
+{
+  "safe_cwe89_user_dao.py::open_db": "[]",
+  "safe_cwe89_user_dao.py::get_user_safe": "[]",
+  "vuln_cwe22_path.py::read_file": "[{\"cwe\": \"CWE-22\", \"line\": 6, \"source\": \"user_path 参数（外部可控输入）\", \"sink\": \"open\", \"reason\": \"user_path 被直接拼接到路径前缀后传入 open，未做规范化或校验，可通过 ../ 进行路径穿越读取任意文件。\", \"confidence\": 0.95}]",
+  "vuln_cwe78_cmd.py::run_command": "[{\"cwe\": \"CWE-78\", \"line\": 7, \"source\": \"user_cmd 参数（外部可控输入）\", \"sink\": \"os.system\", \"reason\": \"user_cmd 未经净化直接拼接进 shell 命令并传给 os.system，可注入任意命令\", \"confidence\": 0.98}]",
+  "vuln_cwe89_user_dao.py::open_db": "[]",
+  "vuln_cwe89_user_dao.py::get_user": "[{\"cwe\": \"CWE-89\", \"line\": 19, \"source\": \"函数参数 username\", \"sink\": \"cursor.execute\", \"reason\": \"username 被直接拼接进 SQL 查询字符串并传给 execute，导致 SQL 注入。\", \"confidence\": 0.98}]"
+}

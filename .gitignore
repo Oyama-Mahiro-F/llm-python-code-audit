@@ -1,0 +1,48 @@
+# ============================================================
+# 基于大语言模型的 Python 代码审计系统 —— 忽略规则
+# ============================================================
+
+# ---- 第三方开源基座（克隆的独立仓库，107 MB；按 commit 固定版本，见 src/README.md）----
+src/
+
+# ---- 课程材料（教师提供的教学计划/评分标准/课件/模板/范例，非本组产出，不入库）----
+01-课程材料/
+
+# ---- Python 虚拟环境与缓存 ----
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# ---- 临时目录与构建产物 ----
+tmp*/
+pip-*/
+pip-*.whl
+*.whl
+*.tmp
+*.log.bak
+
+# ---- 密钥与本地配置（严禁入库）----
+.env
+.env.*
+*.key
+*.pem
+secrets.json
+*_secret*
+deepseek_key*
+
+# ---- 编辑器 / 操作系统 ----
+.vscode/
+.idea/
+*.swp
+Thumbs.db
+desktop.ini
+~$*
+.DS_Store
+
+# ---- 其他 ----
+*.stackdump

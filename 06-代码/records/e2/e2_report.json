@@ -1,0 +1,60 @@
+{
+  "experiment": "E2 消融(验证配置的边际贡献)",
+  "generated_at": "2026-11-13T06:23:56.793406+00:00",
+  "ground_truth": "records/e2/ground_truth.json",
+  "configs": [
+    {
+      "config": "none",
+      "mechanism": "候选直接采纳(无动态验证)",
+      "run_id": "baseline",
+      "n_findings": 5,
+      "verdict_distribution": {
+        "accepted(unverified)": 5
+      },
+      "llm_calls": 0,
+      "sandbox_runs": 0,
+      "precision_alert_level": 1.0,
+      "note": "不适用"
+    },
+    {
+      "config": "A",
+      "mechanism": "模式 A 硬编码检测器(确定性)",
+      "run_id": "e2_A",
+      "n_findings": 5,
+      "verdict_distribution": {
+        "TP": 5
+      },
+      "llm_calls": 5,
+      "sandbox_runs": 1,
+      "precision_alert_level": 1.0,
+      "note": "本轮无失败项,闭环空转(机制可用性已验证)"
+    },
+    {
+      "config": "B",
+      "mechanism": "模式 B LLM 日志推理(带确定性护栏)",
+      "run_id": "e2_B",
+      "n_findings": 5,
+      "verdict_distribution": {
+        "TP": 5
+      },
+      "llm_calls": 5,
+      "sandbox_runs": 1,
+      "precision_alert_level": 1.0,
+      "note": "本轮无失败项,闭环空转(机制可用性已验证)"
+    },
+    {
+      "config": "full",
+      "mechanism": "动态验证 + 重试闭环(改 mock/改 payload,上限 3 轮;本轮判定用模式 B)",
+      "run_id": "e2_A",
+      "n_findings": 5,
+      "verdict_distribution": {
+        "TP": 5
+      },
+      "llm_calls": 5,
+      "sandbox_runs": 1,
+      "precision_alert_level": 1.0,
+      "note": "本轮无失败项,闭环空转(机制可用性已验证)"
+    }
+  ],
+  "honest_boundary": "演示样本集的全部告警均指向真实缺陷、安全对照样本零候选,各配置精确率同为 1.0,不具备区分度;E2 定量结论以 Vul4Py 真实数据集(含真实误报)为准,本报告交付 E2 机制与全链路可用性。重试闭环实战演示:首次模式 B 运行中,L-001(CWE-22)被判 Unconfirmed(归因:mock 假文件返回空内容、payload 构造证据弱,建议改 mock);regen 带该反馈再生成 mock(_FakeFile.read() 改为回显路径内容)后,round 2 判 TP——Unconfirmed→反馈→修复→确认 全链路走通,轨迹见 retry_trace.jsonl。如实说明:该次演示的判定响应被后续重跑共用录制目录覆盖、attempt 目录被清理,trace 首行为其残留记录(记录管理失误);修复措施:录制目录此后按运行隔离。"
+}

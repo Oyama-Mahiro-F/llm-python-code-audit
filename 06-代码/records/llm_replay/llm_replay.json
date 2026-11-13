@@ -1,0 +1,6 @@
+{
+  "safe_cwe89_user_dao.py::open_db": "[]",
+  "safe_cwe89_user_dao.py::get_user_safe": "[]",
+  "vuln_cwe89_user_dao.py::open_db": "[]",
+  "vuln_cwe89_user_dao.py::get_user": "[{\"cwe\": \"CWE-89\", \"line\": 19, \"source\": \"函数参数 username\", \"sink\": \"cursor.execute\", \"reason\": \"username 被直接拼接进 SQL 查询字符串并传给 execute，导致 SQL 注入。\", \"confidence\": 0.98}]"
+}

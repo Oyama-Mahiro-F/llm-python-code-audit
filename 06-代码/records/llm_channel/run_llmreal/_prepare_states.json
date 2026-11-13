@@ -1,0 +1,182 @@
+[
+  {
+    "alert_id": "A-001",
+    "cwe": "CWE-89",
+    "source_alert": {
+      "check_id": "python.lang.security.audit.formatted-sql-query.formatted-sql-query",
+      "path": "/src/vuln_cwe89_user_dao.py",
+      "line": 20,
+      "end_line": 20,
+      "message": "Detected possible formatted SQL query. Use parameterized queries instead."
+    },
+    "static_understanding": {
+      "status": "llm_pending",
+      "note": "DeepSeek API 未接入;本字段仅占位,不参与判定"
+    },
+    "extract": {
+      "ok": true,
+      "file": "D:\\university_learning\\4.1\\信息安全工程概论\\06-代码\\samples\\vuln_cwe89_user_dao.py",
+      "sink_line": 20,
+      "sink_function": "get_user",
+      "module_constants": [
+        "DB_PATH = \"app.db\""
+      ],
+      "functions": [
+        {
+          "name": "open_db",
+          "start_line": 11,
+          "end_line": 13,
+          "is_sink": false
+        },
+        {
+          "name": "get_user",
+          "start_line": 16,
+          "end_line": 21,
+          "is_sink": true
+        }
+      ],
+      "direct_calls": [
+        "open_db"
+      ],
+      "unresolved_calls": [],
+      "cross_file_missing": false,
+      "snippet_path": "records/llm_channel/run_llmreal/A-001/snippet.py"
+    },
+    "harness": {
+      "assemble_ok": true,
+      "assemble_error": null,
+      "harness_path": "D:/university_learning/4.1/信息安全工程概论/06-代码/records/llm_channel/run_llmreal/A-001/harness.py",
+      "harness_sha": "661deebac727ed34",
+      "payload_sha": "f3fa044f9911dec8"
+    },
+    "run": null,
+    "verdict": null,
+    "retries": [],
+    "overhead": {
+      "llm_calls": 0,
+      "sandbox_runs": 1,
+      "wall_time_s": null
+    },
+    "evidence": null
+  },
+  {
+    "alert_id": "A-002",
+    "cwe": "CWE-89",
+    "source_alert": {
+      "check_id": "python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query",
+      "path": "/src/vuln_cwe89_user_dao.py",
+      "line": 20,
+      "end_line": 20,
+      "message": "Avoiding SQL string concatenation: untrusted input concatenated with raw SQL query can result in SQL Injection. In order to execute raw query safely, prepared statement should be used. SQLAlchemy provides TextualSQL to easily used prepared statement with named parameters. For complex SQL composition, use SQL Expression Language or Schema Definition Language. In most cases, SQLAlchemy ORM will be a better option."
+    },
+    "static_understanding": {
+      "status": "llm_pending",
+      "note": "DeepSeek API 未接入;本字段仅占位,不参与判定"
+    },
+    "extract": {
+      "ok": true,
+      "file": "D:\\university_learning\\4.1\\信息安全工程概论\\06-代码\\samples\\vuln_cwe89_user_dao.py",
+      "sink_line": 20,
+      "sink_function": "get_user",
+      "module_constants": [
+        "DB_PATH = \"app.db\""
+      ],
+      "functions": [
+        {
+          "name": "open_db",
+          "start_line": 11,
+          "end_line": 13,
+          "is_sink": false
+        },
+        {
+          "name": "get_user",
+          "start_line": 16,
+          "end_line": 21,
+          "is_sink": true
+        }
+      ],
+      "direct_calls": [
+        "open_db"
+      ],
+      "unresolved_calls": [],
+      "cross_file_missing": false,
+      "snippet_path": "records/llm_channel/run_llmreal/A-002/snippet.py"
+    },
+    "harness": {
+      "assemble_ok": true,
+      "assemble_error": null,
+      "harness_path": "D:/university_learning/4.1/信息安全工程概论/06-代码/records/llm_channel/run_llmreal/A-002/harness.py",
+      "harness_sha": "2335b17c42671562",
+      "payload_sha": "f3fa044f9911dec8"
+    },
+    "run": null,
+    "verdict": null,
+    "retries": [],
+    "overhead": {
+      "llm_calls": 0,
+      "sandbox_runs": 1,
+      "wall_time_s": null
+    },
+    "evidence": null
+  },
+  {
+    "alert_id": "L-001",
+    "cwe": "CWE-89",
+    "source_alert": {
+      "check_id": "llm.discover.cwe89",
+      "path": "vuln_cwe89_user_dao.py",
+      "line": 19,
+      "end_line": 19,
+      "message": "LLM 候选(未经动态验证):username 被直接拼接进 SQL 查询字符串并传给 execute，导致 SQL 注入。"
+    },
+    "static_understanding": {
+      "status": "llm_pending",
+      "note": "DeepSeek API 未接入;本字段仅占位,不参与判定"
+    },
+    "extract": {
+      "ok": true,
+      "file": "D:\\university_learning\\4.1\\信息安全工程概论\\06-代码\\samples\\vuln_cwe89_user_dao.py",
+      "sink_line": 19,
+      "sink_function": "get_user",
+      "module_constants": [
+        "DB_PATH = \"app.db\""
+      ],
+      "functions": [
+        {
+          "name": "open_db",
+          "start_line": 11,
+          "end_line": 13,
+          "is_sink": false
+        },
+        {
+          "name": "get_user",
+          "start_line": 16,
+          "end_line": 21,
+          "is_sink": true
+        }
+      ],
+      "direct_calls": [
+        "open_db"
+      ],
+      "unresolved_calls": [],
+      "cross_file_missing": false,
+      "snippet_path": "records/llm_channel/run_llmreal/L-001/snippet.py"
+    },
+    "harness": {
+      "assemble_ok": true,
+      "assemble_error": null,
+      "harness_path": "D:/university_learning/4.1/信息安全工程概论/06-代码/records/llm_channel/run_llmreal/L-001/harness.py",
+      "harness_sha": "7c26d0af21f06130",
+      "payload_sha": "f3fa044f9911dec8"
+    },
+    "run": null,
+    "verdict": null,
+    "retries": [],
+    "overhead": {
+      "llm_calls": 0,
+      "sandbox_runs": 1,
+      "wall_time_s": null
+    },
+    "evidence": null
+  }
+]

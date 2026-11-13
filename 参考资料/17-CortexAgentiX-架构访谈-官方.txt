@@ -1,0 +1,336 @@
+Blog
+
+Security Operations
+
+AI and Cybersecurity
+
+Cortex AgentiX: A Behind-...
+
+Cortex AgentiX: A Behind-the-Scenes Perspective
+
+Link copied
+
+By Ariel Blaier and Jane Goh
+
+Jan 08, 2026
+
+8 minutes
+
+AI and Cybersecurity
+
+Automation of the Week
+
+Must-Read Articles
+
+Product Features
+
+Agentic AI
+
+AgentiX
+
+agents
+
+Cortex AgentiX
+
+Security Automation
+
+Security Operations
+
+How is AgentiX™ redefining the role of agents in the SOC? I recently sat down with Ariel Blaier, lead product manager for Agentix, to get a behind-the-scenes perspective. We discuss the blueprint for building scalable frameworks and the strategic thinking required to move beyond basic automation toward true agent-scale security.
+
+Jane : Before we jump into the agents, let’s talk about the AgentiX framework. What were some important considerations in your approach to building AgentiX and for managing these agents?
+
+Ariel : When we built AgentiX, we anchored on four things.
+
+First, we knew that for something to be an agent, it has to act in the world , not just talk. And we didn’t want customers to start from zero. They already have a goldmine in Cortex: years of scripts, playbooks, and integrations. So we wrapped that into standardized Actions (a clean way to expose automations to the LLM [large language model] as “tools”, so it can trigger them in natural language), and the agent can reliably use what already works.
+
+Second, we understood that the landscape is changing. Deterministic automation is still foundational; it’s trusted, repeatable, and when you know the path, it does exactly what it should. But with AI on the other side and investigations evolving faster, you can’t pre-map every fork anymore. So we added an agentic layer to make the workflow more dynamic: take an action, look at the evidence, decide the next move, and keep going. It’s how we combine reliability with adaptability.
+
+Third, this is security, so control is non-negotiable, and it’s enforced through multiple layers. There are system-level guardrails, agents are scoped to the specific actions they’re allowed to use, and they still have to operate within the roles and permissions assigned to them (and the user’s access). High-risk steps are gated with approvals when needed, and everything is logged so it’s reviewable and auditable end-to-end. And the level of autonomy is configurable. Customers can choose the autonomy level: requiring an analyst-in-the-loop confirmation, or allowing the dynamic plan to execute end-to-end automatically.
+
+And finally, we built a powerful framework that is both flexible and extensible. Once customers are comfortable using our out-of-the-box agents and actions to deliver immediate value, they have the option to build custom agents to address use cases unique to their environment and add custom integrations into their tool stack.
+
+Jane : The term 'agent' is broadly used now and can mean different things. Can you expand a bit on our version of agents?
+
+Ariel : Yeah, “agent” is an overloaded term right now. In our world, an agent is a system that can understand context, plan, and take real actions , but only inside guardrails.
+
+Concretely, it has hands (actions and automation) and a loop (dynamic planning: take a step, examine the evidence, and decide the next step). And because this is a security system, everything is controlled: RBAC [role-based access control] and policy checks. For high-risk steps, we require human approval and log everything in the audit trail.
+
+Jane : When you first started building the AgentiX agents, what was the single biggest frustration or time-sink for our users that you aimed to solve?
+
+Ariel : Standard playbooks are fantastic for high-volume, predictable work like phishing, but they hit a wall when an investigation gets messy, and you can’t predict every fork in the road. That’s why we built AgentiX around dynamic planning rather than static decision trees. Instead of a hardcoded if/then flow, the agent looks at the evidence it has, determines the next best step, and iterates. Our deterministic scripts and playbooks remain the execution layer, providing reliability and repeatability, while the AI serves as the brain, capable of navigating the unknown without a pre-built map. It’s a shift from rigid automation to adaptive, outcome-driven investigation.
+
+That being said, we offer users a continuum of automation capabilities, ranging from playbooks for deterministic workflows to hybrid playbooks that incorporate some AI tasks and AI agents.
+
+Jane : Now we already have playbooks in all our Cortex products, so when might a user use playbook automation versus an agent?
+
+Ariel : Think of playbooks as deterministic: they’re perfect for high-volume, predictable flows like phishing triage, where the steps are known, and the outcome is basically binary. Agents are dynamic: they shine when the path isn’t clear, more like a SOC analyst reasoning through an ambiguous investigation step by step.
+
+A good rule of thumb: use a playbook when you have a clear map; use an agent when you need a guide to figure out the route. And if you want the best of both worlds, use them in tandem: playbooks as the hands, agents as the brain.
+
+Jane : AgentiX agents use an LLM backbone, but what is the most critical non-LLM component of the architecture that makes it an 'agent' instead of just a chatbot?
+
+Ariel : There isn’t one silver-bullet component that makes a great AI agent - it’s a stack, and it only works if all the pieces are available.
+
+You need actions as the hands and legs: real actions the agent can execute, not just talk about. You need a dynamic planning or CodeAct loop, so it can take a step, look at the evidence, and decide on the next move. You need specific instructions (when building the agent and prompting it), so the agent behaves the way their environment and risk appetite require. And you need roles and permissions to keep it safe in a high-blast-radius system.
+
+Remove any one of those, and it stops being an agent. It collapses back into a chatbot or, worse, something unsafe.
+
+Jane : Our agents integrate with various external systems. How do you design an agent to know which 'tool' to use and when?
+
+Ariel : We don’t expose raw integrations directly to the model. We wrap them as actions , an abstraction layer where every tool has a clear purpose with a strict input/output contract (schema), so the agent can reason and understand what each tool does and how to call it (similar in spirit to MCP [model context protocol] / tool-calling). On top of that, we use a multi-step filtering/ranking flow, so the agent only sees the small set of actions that are relevant for the user’s request and the current case context.
+
+Jane : What happens when a tool returns an unexpected result or bad data?
+
+Ariel : We built code-act agents with dynamic planning: tool results (including errors) are treated as new evidence. The agent decides whether to retry with corrected parameters, pivot to an alternative action, or stop and ask for what’s missing. When the output is malformed or unexpected, we validate it against the action contract and either rerun or switch paths, rather than having the agent “wing it.”
+
+Jane : Besides system agents, users can also build their own custom agents. Do you have any practical advice for users embarking on this journey?
+
+Ariel : Don’t rush into building an agent before you’re clear on what you want to get out of it. You’ll just end up frustrated. I start by being honest about where I need help: what I’m not great at, what I avoid, or where I need a mirror to sanity-check me. Then I define one clear outcome for the agent, and keep the scope tight. If you pile on an entire wish list, you’ll get a confused agent that’s mediocre at everything.
+
+Once the outcome is clear, the rest is straightforward: identify the concrete tasks it needs to do (the actions/tools), and write the specific instructions that keep it within its rails: what to prioritize, what to avoid, and what “good” looks like.
+
+Jane : Without giving away trade secrets, is there one future capability or feature for AgentiX that you are personally most excited about, and how will it change a user's workflow?
+
+Ariel : Only one? That’s a tough call to make. AI is moving so fast, it’s constant FOMO. I feel like I’m in a toy store and someone keeps telling me I can pick just one thing.
+
+Without giving away any trade secrets, the thing I’m most excited about is the shift to AI-first product thinking across the whole company, not just engineering. PM, UX, support, tech docs… we’re all starting to build with the same question in mind: “How will an agent understand this? What context will it need? What’s safe to do, and what must require human approval?” When you do that consistently, the workflow changes: there’s less copy-paste, less jumping between screens, less “explain the case to the AI.” The system already understands what you’re looking at, what you’re trying to achieve, what it’s allowed to do, and executes within guardrails. And when it acts, it does it behind permissions and clear guardrails.
+
+So the “feature” I’m most excited about is what this mindset unlocks for our customers: a much more natural, contextual, and scalable agent experience.
+
+The shift toward agentic systems is one of the most exciting frontiers in security today. How is your SOC preparing for the rise of autonomous agents?
+
+Learn more by visiting our web page , or schedule a Cortex XSIAM demo to see it in action.
+
+Related Blogs
+
+AI and Cybersecurity , AI Security , Automation of the Week , Must-Read Articles
+
+Always on the Case: Introducing the AgentiX Case Investigation Agent
+
+AI and Cybersecurity , AI Security , Automation of the Week , Product Features , Products and Services
+
+A Day in the Life with Your AgentiX Automation Engineer Agent
+
+AI and Cybersecurity , Automation of the Week , Must-Read Articles
+
+Introducing the Cortex MCP Server
+
+AI and Cybersecurity , Automation of the Week
+
+Don’t Get Reeled In: The Case for AI-Driven Phishing Response
+
+AI and Cybersecurity , Must-Read Articles
+
+The Frontier AI SOC Has Arrived
+
+AI and Cybersecurity , Must-Read Articles , Product Features
+
+What’s New in Cortex (May ‘26)
+
+Subscribe to Security Operations Blogs!
+
+Sign up to receive must-read articles, Playbooks of the Week, new feature announcements, and more.
+
+Sign up
+Please enter a valid email.
+
+By submitting this form, you agree to our Terms of Use and acknowledge our Privacy Statement . Please look for a confirmation email from us. If you don't receive it in the next 10 minutes, please check your spam folder.
+
+This site is protected by reCAPTCHA and the Google Privacy Policy and Terms of Service apply.
+
+Get the latest news, invites to events, and threat alerts
+
+Enter your email now to subscribe!
+
+Sign up
+
+By submitting this form, you agree to our Terms of Use and acknowledge our Privacy Statement .
+
+Sign up
+
+Get the latest news, invites to events, and threat alerts
+
+Enter your email now to subscribe!
+
+Sign up
+
+By submitting this form, I understand my personal data will be processed in accordance with Palo Alto Networks Privacy Statement and Terms of Use.
+
+Sign up
+
+Products and Services
+
+AI-Powered Network Security Platform
+
+Secure AI by Design
+
+Prisma AIRS
+
+AI Access Security
+
+Cloud Delivered Security Services
+
+Advanced Threat Prevention
+
+Advanced URL Filtering
+
+Advanced WildFire
+
+Advanced DNS Security
+
+Enterprise Data Loss Prevention
+
+Enterprise IoT Security
+
+Medical IoT Security
+
+Industrial OT Security
+
+SaaS Security
+
+Next-Generation Firewalls
+
+Hardware Firewalls
+
+Software Firewalls
+
+Strata Cloud Manager
+
+SD-WAN for NGFW
+
+PAN-OS
+
+Panorama
+
+Secure Access Service Edge
+
+Prisma SASE
+
+Application Acceleration
+
+Autonomous Digital Experience Management
+
+Enterprise DLP
+
+Prisma Access
+
+Prisma Browser
+
+Prisma SD-WAN
+
+Remote Browser Isolation
+
+SaaS Security
+
+AI-Driven Security Operations Platform
+
+Cloud Security
+
+Cortex Cloud
+
+Application Security
+
+Cloud Posture Security
+
+Cloud Runtime Security
+
+Prisma Cloud
+
+AI-Driven SOC
+
+Cortex XSIAM
+
+Cortex XDR
+
+Cortex XSOAR
+
+Cortex Xpanse
+
+Unit 42 Managed Detection & Response
+
+Managed XSIAM
+
+Observability
+
+Cortex XCOR
+
+Next-Generation Identity Security
+
+Privileged Access Management
+
+Identity and Access Management
+
+Endpoint Privilege Manager
+
+Identity Governance
+
+Workforce Password Management
+
+Agentic Identities
+
+Secrets Management
+
+Unified Secrets Governance
+
+Application Credentials Delivery
+
+Vendor Privileged Access
+
+Threat Intel and Incident Response Services
+
+Prepare for Emerging Risks
+
+Strengthen Your Defenses
+
+Build Your Security Strategy
+
+Understand the Adversary
+
+Respond to a Cyber Attack
+
+Company
+
+About Us
+
+Careers
+
+Contact Us
+
+Corporate Responsibility
+
+Customers
+
+Investor Relations
+
+Location
+
+Newsroom
+
+Popular Links
+
+Blog
+
+Communities
+
+Content Library
+
+Cyberpedia
+
+Event Center
+
+Manage Email Preferences
+
+Products A-Z
+
+Product Certifications
+
+Report a Vulnerability
+
+Sitemap
+
+Tech Docs
+
+Unit 42
+
+Do Not Sell or Share My Personal Information

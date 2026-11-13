@@ -1,0 +1,8 @@
+{
+  "A-001::judge_r1": "{\"verdict\": \"TP\", \"reason\": \"payload 原样拼入 SQL 并到达 sqlite3.Cursor.execute，sanitized 为 false，构成 SQL 注入。\", \"fix_suggestion\": null}",
+  "A-002::judge_r1": "{\"verdict\": \"TP\", \"reason\": \"payload 原样拼入 SQL 并到达 sqlite3.Cursor.execute，sanitized 为 false，构成 SQL 注入。\", \"fix_suggestion\": null}",
+  "L-001::judge_r1": "{\"verdict\": \"TP\", \"reason\": \"payload ../../etc/passwd-zxq-demo-marker 经字符串拼接到达 builtins.open，路径穿越未被拦截，构成路径穿越漏洞\", \"fix_suggestion\": null}",
+  "L-002::judge_r1": "{\"verdict\": \"TP\", \"reason\": \"payload 中的 shell 元字符经字符串拼接进入 os.system，捕获到的调用为 \\\"ls zxq-demo-marker; echo pwned\\\"，证明命令注入已到达危险 sink。\", \"fix_suggestion\": null}",
+  "L-003::judge_r1": "{\"verdict\": \"TP\", \"reason\": \"payload 原样拼入 SQL 并到达 sqlite3.Cursor.execute，sanitized 为 false，构成 SQL 注入。\", \"fix_suggestion\": null}",
+  "L-001::judge_r2": "{\"verdict\": \"TP\", \"reason\": \"payload ../../etc/passwd-zxq-demo-marker 经字符串拼接到达 builtins.open，路径穿越至 /var/data/../../etc/passwd-zxq-demo-marker，运行证据表明未做规范化或校验，构成路径穿越漏洞\", \"fix_suggestion\": null}"
+}

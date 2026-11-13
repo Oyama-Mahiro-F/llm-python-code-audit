@@ -1,0 +1,1 @@
+@@RESULT@@{"captured": {"sink_api": "builtins.open", "calls": [{"args": "/var/data/../../etc/passwd-zxq-demo-marker"}]}, "payload": "../../etc/passwd-zxq-demo-marker", "error": null}

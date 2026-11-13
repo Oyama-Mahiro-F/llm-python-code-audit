@@ -1,0 +1,12 @@
+# 运行环境:Python 3.12(.venv 由 uv 管理的 CPython 3.12.13 创建)
+# 安装源:pypi.tuna.tsinghua.edu.cn(实测直连可用)
+tree-sitter>=0.23
+tree-sitter-python>=0.23
+# SAST:semgrep 官方不支持 Windows 原生运行,实际扫描经 semgrep/semgrep
+# 官方容器执行(见 auditor/sast_scan.py);此处安装仅用于 Linux/WSL 环境。
+semgrep>=1.50 ; sys_platform != "win32"
+# 沙箱执行层(SWE-ReX):见 README"SWE-ReX 接入状态"
+swe-rex>=0.1
+# swe-rex 依赖(1.4.0 元数据未自动带入)
+aiohttp>=3.9
+requests>=2.31

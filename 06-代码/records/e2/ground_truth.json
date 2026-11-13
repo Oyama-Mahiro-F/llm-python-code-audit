@@ -1,0 +1,11 @@
+{
+  "comment": "演示样本集的样本级真值(人工构造,作者即标注者);安全对照样本不应产生任何告警",
+  "vulnerable_files": [
+    "vuln_cwe89_user_dao.py",
+    "vuln_cwe78_cmd.py",
+    "vuln_cwe22_path.py"
+  ],
+  "clean_files": [
+    "safe_cwe89_user_dao.py"
+  ]
+}

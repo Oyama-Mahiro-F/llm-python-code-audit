@@ -1,0 +1,19 @@
+{
+  "llm_backend": "replay",
+  "llm_model": "deepseek-chat",
+  "llm_calls": 0,
+  "prompt_version": "v1-2026-11-06",
+  "attempt": 1,
+  "sink_function": "run_command",
+  "llm_raw_chars": 345,
+  "ok": true,
+  "generated_by": "llm(replay)",
+  "mock_code": "CAPTURED = {'sink_api': 'os.system', 'calls': []}\n\ndef _fake_system(cmd):\n    CAPTURED['calls'].append({'args': str(cmd)})\n    return 0\n\ndef _install_mock():\n    import os\n    os.system = _fake_system",
+  "payload": "zxq-demo-marker; echo pwned",
+  "imports": [
+    "import os"
+  ],
+  "rationale": "掉包 os.system 为仅记录命令字符串的桩，绝不执行 shell",
+  "mock_path": "records/e2/run_e2_B/L-002/mock_patch.py",
+  "payload_path": "records/e2/run_e2_B/L-002/payload.txt"
+}

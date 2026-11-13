@@ -1,0 +1,77 @@
+{
+  "tool": "llm_discover",
+  "backend": "deepseek",
+  "model": "deepseek-chat",
+  "prompt_version": "v1-2026-10-30",
+  "cwe_scope": [
+    "CWE-89",
+    "CWE-78",
+    "CWE-22",
+    "CWE-79"
+  ],
+  "generated_at": "2026-11-05T19:19:45.485656+00:00",
+  "ok": true,
+  "stats": {
+    "files": 4,
+    "functions": 6,
+    "skipped": 0,
+    "llm_calls": 6,
+    "candidates": 3,
+    "errors": 0
+  },
+  "prompt_chars_total": 3670,
+  "errors_from_tool": [],
+  "alerts": [
+    {
+      "alert_id": "L-001",
+      "check_id": "llm.discover.cwe22",
+      "path": "vuln_cwe22_path.py",
+      "line": 6,
+      "col": null,
+      "end_line": 6,
+      "cwe": "CWE-22",
+      "message": "LLM 候选(未经动态验证):user_path 被直接拼接到路径前缀后传入 open，未做规范化或校验，可通过 ../ 进行路径穿越读取任意文件。",
+      "metavars": {
+        "source": "user_path 参数（外部可控输入）",
+        "sink": "open",
+        "function": "read_file",
+        "confidence_llm_self_report": 0.95,
+        "note": "置信度为 LLM 自述,不参与判定"
+      }
+    },
+    {
+      "alert_id": "L-002",
+      "check_id": "llm.discover.cwe78",
+      "path": "vuln_cwe78_cmd.py",
+      "line": 7,
+      "col": null,
+      "end_line": 7,
+      "cwe": "CWE-78",
+      "message": "LLM 候选(未经动态验证):user_cmd 未经净化直接拼接进 shell 命令并传给 os.system，可注入任意命令",
+      "metavars": {
+        "source": "user_cmd 参数（外部可控输入）",
+        "sink": "os.system",
+        "function": "run_command",
+        "confidence_llm_self_report": 0.98,
+        "note": "置信度为 LLM 自述,不参与判定"
+      }
+    },
+    {
+      "alert_id": "L-003",
+      "check_id": "llm.discover.cwe89",
+      "path": "vuln_cwe89_user_dao.py",
+      "line": 19,
+      "col": null,
+      "end_line": 19,
+      "cwe": "CWE-89",
+      "message": "LLM 候选(未经动态验证):username 被直接拼接进 SQL 查询字符串并传给 execute，导致 SQL 注入。",
+      "metavars": {
+        "source": "函数参数 username",
+        "sink": "cursor.execute",
+        "function": "get_user",
+        "confidence_llm_self_report": 0.98,
+        "note": "置信度为 LLM 自述,不参与判定"
+      }
+    }
+  ]
+}

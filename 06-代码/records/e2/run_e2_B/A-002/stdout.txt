@@ -1,0 +1,1 @@
+@@RESULT@@{"captured": {"sink_api": "sqlite3.Cursor.execute", "calls": [{"args": "SELECT id, email FROM users WHERE name = 'zxq-demo-marker' OR '1'='1'", "sanitized": false}]}, "payload": "zxq-demo-marker' OR '1'='1", "error": null}

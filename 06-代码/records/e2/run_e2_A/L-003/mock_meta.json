@@ -1,0 +1,19 @@
+{
+  "llm_backend": "deepseek",
+  "llm_model": "deepseek-chat",
+  "llm_calls": 1,
+  "prompt_version": "v1-2026-11-06",
+  "attempt": 1,
+  "sink_function": "get_user",
+  "llm_raw_chars": 727,
+  "ok": true,
+  "generated_by": "llm(deepseek)",
+  "mock_code": "CAPTURED = {'sink_api': 'sqlite3.Cursor.execute', 'calls': []}\n\nclass _FakeCursor:\n    def execute(self, sql=None, params=None):\n        CAPTURED['calls'].append({'args': str(sql), 'sanitized': params is not None})\n        return self\n    def fetchone(self):\n        return None\n\nclass _FakeConnection:\n    def cursor(self):\n        return _FakeCursor()\n    def close(self):\n        return None\n\ndef _fake_connect(*args, **kwargs):\n    return _FakeConnection()\n\ndef _install_mock():\n    import sqlite3\n    sqlite3.connect = _fake_connect",
+  "payload": "zxq-demo-marker' OR '1'='1",
+  "imports": [
+    "import sqlite3"
+  ],
+  "rationale": "掉包 sqlite3.connect 返回假连接/游标，拦截 execute 并记录拼接后的 SQL 字符串，不触碰真实数据库。",
+  "mock_path": "records/e2/run_e2_A/L-003/mock_patch.py",
+  "payload_path": "records/e2/run_e2_A/L-003/payload.txt"
+}

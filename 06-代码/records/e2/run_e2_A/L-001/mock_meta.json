@@ -1,0 +1,19 @@
+{
+  "llm_backend": "deepseek",
+  "llm_model": "deepseek-chat",
+  "llm_calls": 1,
+  "prompt_version": "v1-2026-11-06",
+  "attempt": 1,
+  "sink_function": "read_file",
+  "llm_raw_chars": 626,
+  "ok": true,
+  "generated_by": "llm(deepseek)",
+  "mock_code": "CAPTURED = {'sink_api': 'builtins.open', 'calls': []}\n\nclass _FakeFile:\n    def __init__(self, path):\n        self._path = path\n    def read(self):\n        return ''\n    def __enter__(self):\n        return self\n    def __exit__(self, *a):\n        return False\n\ndef _fake_open(file=None, *args, **kwargs):\n    CAPTURED['calls'].append({'args': str(file)})\n    return _FakeFile(file)\n\ndef _install_mock():\n    import builtins\n    builtins.open = _fake_open",
+  "payload": "../../etc/passwd-zxq-demo-marker",
+  "imports": [
+    "import builtins"
+  ],
+  "rationale": "掉包 builtins.open,仅记录拼接后的路径字符串,不进行任何真实文件读取",
+  "mock_path": "records/e2/run_e2_A/L-001/mock_patch.py",
+  "payload_path": "records/e2/run_e2_A/L-001/payload.txt"
+}

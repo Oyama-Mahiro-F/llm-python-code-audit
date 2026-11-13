@@ -1,0 +1,19 @@
+{
+  "ok": true,
+  "file": "D:\\university_learning\\4.1\\信息安全工程概论\\06-代码\\samples\\vuln_cwe78_cmd.py",
+  "sink_line": 7,
+  "sink_function": "run_command",
+  "module_constants": [],
+  "functions": [
+    {
+      "name": "run_command",
+      "start_line": 5,
+      "end_line": 8,
+      "is_sink": true
+    }
+  ],
+  "direct_calls": [],
+  "unresolved_calls": [],
+  "cross_file_missing": false,
+  "snippet_path": "records/e2/run_e2_A/L-002/snippet.py"
+}
