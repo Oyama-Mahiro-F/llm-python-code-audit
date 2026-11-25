@@ -73,21 +73,30 @@ def write_env_snapshot(work_dir: Path, image: str) -> dict:
 
 
 def docker_command(work_dir: Path, harness_name: str = "harness.py",
-                   image: str = SANDBOX_IMAGE) -> list[str]:
-    """构造在隔离容器中执行 harness 的完整 docker 命令。"""
+                   image: str | None = None,
+                   language: str = "python") -> list[str]:
+    """构造在隔离容器中执行 harness 的完整 docker 命令(按语言选镜像与执行器)。"""
+    from .lang import RUNTIME
+    rt = RUNTIME.get(language, RUNTIME["python"])
+    image = image or rt["image"]
+    runner = [rt["run"][0], harness_name]
     return ["docker", "run", "--rm",
             "-v", f"{work_dir.resolve().as_posix()}:/work",
-            "-w", "/work", image, "python", harness_name]
+            "-w", "/work", image, *runner]
 
 
 def replay_command(work_dir: Path, harness_name: str = "harness.py",
-                   image: str = SANDBOX_IMAGE) -> str:
-    return " ".join(docker_command(work_dir, harness_name, image))
+                   image: str | None = None,
+                   language: str = "python") -> str:
+    return " ".join(docker_command(work_dir, harness_name, image, language))
 
 
 def run_harness(work_dir: str | Path, harness_name: str = "harness.py",
-                image: str = SANDBOX_IMAGE, timeout: int = 120) -> dict:
+                image: str | None = None, timeout: int = 120,
+                language: str = "python") -> dict:
     """driver=docker:直接执行并捕获 stdout/stderr 与退出码。"""
+    from .lang import RUNTIME
+    image = image or RUNTIME.get(language, RUNTIME["python"])["image"]
     work_dir = Path(work_dir).resolve()
     env = write_env_snapshot(work_dir, image)
     started = time.time()
@@ -96,10 +105,12 @@ def run_harness(work_dir: str | Path, harness_name: str = "harness.py",
                 "stdout": "", "stderr": "image_unavailable",
                 "elapsed_s": 0.0,
                 "error": "image_unavailable",
-                "replay_command": replay_command(work_dir, harness_name, image)}
-    cmd = docker_command(work_dir, harness_name, image)
+                "replay_command": replay_command(work_dir, harness_name, image,
+                                                 language)}
+    cmd = docker_command(work_dir, harness_name, image, language)
     try:
-        proc = _docker(cmd[1:], timeout)
+        args = cmd[1:] if cmd[0] == "docker" else cmd
+        proc = _docker(args, timeout)
         exit_code, stdout, stderr, err = proc.returncode, proc.stdout, proc.stderr, None
     except subprocess.TimeoutExpired as exc:
         exit_code, stdout, stderr, err = None, "", "", f"timeout:{exc}"
@@ -112,26 +123,33 @@ def run_harness(work_dir: str | Path, harness_name: str = "harness.py",
 # ---------------- external(两阶段)驱动 ----------------
 
 def emit_command_file(work_dir: Path, harness_name: str = "harness.py",
-                      image: str = SANDBOX_IMAGE) -> str:
+                      image: str | None = None,
+                      language: str = "python") -> str:
     """生成一行可被 bash 执行的命令(stdout/stderr/退出码落盘到 run 目录)。
 
     首句为镜像探测(docker image inspect),供两阶段回收时采信环境状态。
     """
+    from .lang import RUNTIME
+    rt = RUNTIME.get(language, RUNTIME["python"])
+    image = image or rt["image"]
+    runner = rt["run"][0]
     work_dir = Path(work_dir).resolve()
     wd = work_dir.as_posix()
     return (f'docker image inspect --format "{{{{.Id}}}}" {image} '
             f'> "{wd}/image_id.txt" 2>/dev/null; '
             f'docker run --rm -v "{wd}:/work" -w /work {image} '
-            f'python {harness_name} > "{wd}/stdout.txt" '
+            f'{runner} {harness_name} > "{wd}/stdout.txt" '
             f'2> "{wd}/stderr.txt"; echo $? > "{wd}/exit_code.txt"')
 
 
-def load_captured(work_dir: str | Path) -> dict:
+def load_captured(work_dir: str | Path, language: str = "python") -> dict:
     """回收 shell 执行产物,组装成与 run_harness 相同结构的结果。"""
+    from .lang import RUNTIME
+    rt = RUNTIME.get(language, RUNTIME["python"])
     work_dir = Path(work_dir)
     # 始终重算环境状态(镜像探测以 shell 侧 image_id.txt 为准),
     # 避免沿用上一轮遗留的陈旧快照。
-    env = write_env_snapshot(work_dir, SANDBOX_IMAGE)
+    env = write_env_snapshot(work_dir, rt["image"])
     stdout_f, stderr_f, exit_f = (work_dir / "stdout.txt",
                                   work_dir / "stderr.txt",
                                   work_dir / "exit_code.txt")
@@ -149,5 +167,6 @@ def load_captured(work_dir: str | Path) -> dict:
         if stderr_f.exists() else "",
         "elapsed_s": None,
         "error": None if exit_f.exists() else "sandbox_step_not_executed",
-        "replay_command": replay_command(work_dir),
+        "replay_command": replay_command(
+            work_dir, rt["filename"], rt["image"], language),
     }

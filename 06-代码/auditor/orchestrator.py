@@ -32,7 +32,7 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
-from . import extract, harness, mock_gen, sandbox, verdict
+from . import extract, harness, mock_gen, narrative, sandbox, verdict
 
 MAX_RETRIES = 3          # 重试上限(方案 4.3.5)
 MAX_LLM_CALLS = 12       # 单告警 LLM 调用预算上限(预算控制)
@@ -92,7 +92,8 @@ def prepare_alert(alert: dict, project_dir: Path, run_dir: Path,
         "alert_id": alert["alert_id"],
         "cwe": alert.get("cwe"),
         "source_alert": {k: alert.get(k) for k in
-                         ("check_id", "path", "line", "end_line", "message")},
+                         ("alert_id", "check_id", "path", "line", "end_line",
+                          "message", "metavars") if alert.get(k) is not None},
         "static_understanding": _static_understanding(),
         "extract": None, "harness": None, "run": None,
         "verdict": None, "retries": [], "pending_attempt": None,
@@ -110,7 +111,8 @@ def prepare_alert(alert: dict, project_dir: Path, run_dir: Path,
     state["overhead"]["llm_calls"] += mock_meta.get("llm_calls", 0)
     state["mock"] = {k: mock_meta.get(k) for k in
                      ("generated_by", "template", "rationale", "error",
-                      "fallback_reason") if mock_meta.get(k)}
+                      "fallback_reason", "mock_file", "sink_api", "language")
+                     if mock_meta.get(k)}
     harness_meta = harness.assemble(alert, extract_meta, mock_meta, run_dir)
     state["harness"] = harness_meta
     return state
@@ -130,7 +132,8 @@ def collect_alert(alert: dict, state: dict, run_dir: Path,
                             "confirmed_by": "execution"}
         return state
 
-    run = sandbox.load_captured(run_dir)
+    language = (state.get("extract") or {}).get("language") or "python"
+    run = sandbox.load_captured(run_dir, language)
     state["run"] = {k: run.get(k) for k in
                     ("env_ok", "exit_code", "elapsed_s", "replay_command")}
     state["run"]["env_snapshot"] = run["env"]
@@ -140,11 +143,17 @@ def collect_alert(alert: dict, state: dict, run_dir: Path,
     payload_path = run_dir / "payload.txt"
     payload = (payload_path.read_text(encoding="utf-8")
                if payload_path.exists() else "")
+    snippet_file = (state["extract"].get("snippet_file") or "snippet.py")
+    mock_file = (state["harness"].get("mock_file")
+                 or ("mock_patch.py" if language == "python"
+                     else "mock_patch.php"))
+    if not (run_dir / mock_file).exists() and (run_dir / "mock_patch.py").exists():
+        mock_file = "mock_patch.py"
 
     if verdict_mode == "B" and judge_be is not None:
         evidence = {}
-        for name, fname in (("snippet", "snippet.py"),
-                            ("mock", "mock_patch.py")):
+        for name, fname in (("snippet", snippet_file),
+                            ("mock", mock_file)):
             f = run_dir / fname
             evidence[name] = (f.read_text(encoding="utf-8")
                               if f.exists() else None)
@@ -163,6 +172,16 @@ def collect_alert(alert: dict, state: dict, run_dir: Path,
         "replay_command": run.get("replay_command"),
         "stdout_tail": state["run"]["stdout_tail"],
     }
+    state["payload"] = payload
+    # 具体化描述(证据填空,含 CVE 参照):由本模块确定性生成并落盘
+    snippet_txt = ((run_dir / snippet_file).read_text(encoding="utf-8")
+                   if (run_dir / snippet_file).exists() else "")
+    mock_txt = ((run_dir / mock_file).read_text(encoding="utf-8")
+                if (run_dir / mock_file).exists() else "")
+    try:
+        state["narrative"] = narrative.build(state, snippet_txt, mock_txt)
+    except Exception as exc:  # 描述失败不影响判定结果
+        state["narrative"] = {"error": f"{type(exc).__name__}: {exc}"}
     return state
 
 
@@ -190,19 +209,34 @@ def _finalize(out_dir: Path, run_base: Path, run_id: str,
     (out_dir / "audit_report.json").write_text(
         json.dumps({"summary": summary, "findings": states},
                    ensure_ascii=False, indent=2), encoding="utf-8")
+    (run_base / "audit_report.json").write_text(
+        (out_dir / "audit_report.json").read_text(encoding="utf-8"),
+        encoding="utf-8")
 
-    lines = ["# 审计报告(中期演示)", "",
+    lines = ["# 审计报告", "",
              f"- 运行编号:{run_id}",
              f"- 告警总数:{summary['total']}",
              f"- 判定分布:TP={counts['TP']}, FP={counts['FP']}, "
              f"未确认={counts['Unconfirmed']}", ""]
     for s in states:
         v = s.get("verdict") or {}
-        lines += [f"## {s['alert_id']}({s.get('cwe')})",
-                  f"- 判定:**{v.get('verdict')}** —— {v.get('reason')}",
-                  f"- 复现命令:{(s.get('evidence') or {}).get('replay_command')}",
+        nar = s.get("narrative") or {}
+        title = nar.get("title") or s.get("cwe") or s.get("alert_id")
+        lines += [f"## {s['alert_id']} · {title}",
+                  f"- 判定:**{v.get('verdict')}**(模式 {v.get('mode')})",
+                  f"- 具体描述:{nar.get('text') or v.get('reason')}"]
+        if nar.get("captured_arg"):
+            lines.append(f"- 截获实参:`{nar['captured_arg']}`")
+        cve = nar.get("cve_ref")
+        if cve:
+            lines.append(f"- CVE 参照:[{cve['cve_id']}]({cve.get('nvd_url')}) "
+                         f"— {cve.get('summary_zh', '')}")
+        lines += [f"- 复现命令:{(s.get('evidence') or {}).get('replay_command')}",
                   ""]
     (out_dir / "audit_report.md").write_text("\n".join(lines), encoding="utf-8")
+    (run_base / "audit_report.md").write_text(
+        (out_dir / "audit_report.md").read_text(encoding="utf-8"),
+        encoding="utf-8")
     print(f"[orchestrator] summary: {counts} -> "
           f"{(out_dir / 'audit_report.json').resolve().as_posix()}")
 
@@ -252,7 +286,10 @@ def cmd_prepare(args) -> int:
               f"extract={'ok' if st['extract'].get('ok') else 'fail'} "
               f"harness={'ok' if label else 'fail'} mock={gen_by}")
         if st["harness"] and st["harness"].get("assemble_ok"):
-            cmds.append(sandbox.emit_command_file(run_dir))
+            cmds.append(sandbox.emit_command_file(
+                run_dir,
+                harness_name=st["harness"].get("harness_file", "harness.py"),
+                language=(st["extract"] or {}).get("language", "python")))
     cmds.append('echo "sandbox step done"')
     (run_base / "sandbox_cmds.sh").write_text("\n".join(cmds) + "\n",
                                               encoding="utf-8")
@@ -342,9 +379,11 @@ def cmd_regen(args) -> int:
         attempt_dir = base_dir / f"attempt_{round_no}"
         attempt_dir.mkdir(parents=True, exist_ok=True)
         # 提取结果不变,复制 snippet 供 generate/assemble 使用
-        if (base_dir / "snippet.py").exists():
-            (attempt_dir / "snippet.py").write_text(
-                (base_dir / "snippet.py").read_text(encoding="utf-8"),
+        snippet_file = ((st.get("extract") or {}).get("snippet_file")
+                        or "snippet.py")
+        if (base_dir / snippet_file).exists():
+            (attempt_dir / snippet_file).write_text(
+                (base_dir / snippet_file).read_text(encoding="utf-8"),
                 encoding="utf-8")
 
         fix = v.get("fix_suggestion") or "改 mock"
@@ -359,10 +398,14 @@ def cmd_regen(args) -> int:
         if stderr_tail:
             feedback += f";stderr={stderr_tail[-300:]}"
 
+        harness_file = ((st.get("harness") or {}).get("harness_file")
+                        or "harness.py")
+        mock_file = ((st.get("mock") or {}).get("mock_file")
+                     or "mock_patch.py")
         if fix == "改 payload":
             # 仅更新 payload,复用现有 harness(省一次 mock 生成)
             import shutil
-            for name in ("harness.py", "mock_patch.py"):
+            for name in (harness_file, mock_file):
                 src = base_dir / name
                 if src.exists():
                     shutil.copy(src, attempt_dir / name)
@@ -404,7 +447,9 @@ def cmd_regen(args) -> int:
         st["pending_attempt"] = {"round": round_no,
                                  "dir": attempt_dir.as_posix(),
                                  "branch": fix}
-        cmds.append(sandbox.emit_command_file(attempt_dir))
+        cmds.append(sandbox.emit_command_file(
+            attempt_dir, harness_name=harness_file,
+            language=(st.get("extract") or {}).get("language", "python")))
 
     (run_base / "_prepare_states.json").write_text(
         json.dumps(states, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -434,7 +479,11 @@ def cmd_run(args) -> int:
         st = prepare_alert(alert, project_dir, run_dir, mk)
         t0 = time.time()
         if st["harness"] and st["harness"].get("assemble_ok"):
-            run = sandbox.run_harness(run_dir)
+            language = (st["extract"] or {}).get("language") or "python"
+            run = sandbox.run_harness(
+                run_dir,
+                harness_name=(st["harness"].get("harness_file") or "harness.py"),
+                language=language)
             payload = (run_dir / "payload.txt").read_text(encoding="utf-8")
             st["run"] = {k: run.get(k) for k in
                          ("env_ok", "exit_code", "elapsed_s", "replay_command")}
@@ -444,8 +493,12 @@ def cmd_run(args) -> int:
             if mode == "B" and judge_be is not None:
                 evidence = {n: (run_dir / f).read_text(encoding="utf-8")
                             if (run_dir / f).exists() else None
-                            for n, f in (("snippet", "snippet.py"),
-                                         ("mock", "mock_patch.py"))}
+                            for n, f in (
+                                ("snippet", st["extract"].get("snippet_file")
+                                 or "snippet.py"),
+                                ("mock", st["harness"].get("mock_file")
+                                 or ("mock_patch.py" if language == "python"
+                                     else "mock_patch.php")))}
                 st["verdict"] = verdict.judge_mode_b(
                     alert, payload, run, evidence, judge_be,
                     key=f"{alert['alert_id']}::judge_r1")

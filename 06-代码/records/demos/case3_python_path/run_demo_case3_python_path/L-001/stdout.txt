@@ -1,0 +1,1 @@
+@@RESULT@@{"captured": {"sink_api": "builtins.open", "calls": [{"args": "/var/app/reports/../../etc/passwd"}]}, "payload": "../../etc/passwd", "error": null}

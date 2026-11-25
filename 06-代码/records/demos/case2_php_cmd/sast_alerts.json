@@ -1,0 +1,29 @@
+{
+  "tool": "semgrep",
+  "version": "1.182.1",
+  "config": "p/default",
+  "backend": "docker(external)",
+  "ok": true,
+  "errors_from_tool": [],
+  "generated_at": "2026-11-25T19:57:12.560919+00:00",
+  "alerts": [
+    {
+      "alert_id": "A-001",
+      "check_id": "php.lang.security.exec-use.exec-use",
+      "path": "/src/ping.php",
+      "line": 14,
+      "col": 5,
+      "end_line": 14,
+      "cwe": "CWE-78",
+      "message": "Executing non-constant commands. This can lead to command injection.",
+      "metavars": null,
+      "cwe_reported": "CWE-94",
+      "cwe_normalization": {
+        "from": "CWE-94",
+        "to": "CWE-78",
+        "when_message_contains": "command injection",
+        "reason": "Semgrep 规则 metadata 记为 CWE-94(代码注入),shell 命令拼接的准确分类为 CWE-78(OS 命令注入)"
+      }
+    }
+  ]
+}

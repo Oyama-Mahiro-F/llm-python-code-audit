@@ -1,0 +1,184 @@
+{
+  "summary": {
+    "run_id": "demo_case2_php_cmd",
+    "generated_at": "2026-11-25T20:05:05.949089+00:00",
+    "total": 1,
+    "counts": {
+      "TP": 1,
+      "FP": 0,
+      "Unconfirmed": 0
+    },
+    "unconfirmed_rate": 0.0,
+    "llm_calls": 0,
+    "note": "mock 生成后端见各 finding 的 mock.generated_by;判定均为模式 A(确定性)"
+  },
+  "findings": [
+    {
+      "alert_id": "A-001",
+      "cwe": "CWE-78",
+      "source_alert": {
+        "alert_id": "A-001",
+        "check_id": "php.lang.security.exec-use.exec-use",
+        "path": "/src/ping.php",
+        "line": 14,
+        "end_line": 14,
+        "message": "Executing non-constant commands. This can lead to command injection."
+      },
+      "static_understanding": {
+        "status": "llm_pending",
+        "note": "逐告警静态理解未接入;候选发现已由 llm_discover 覆盖"
+      },
+      "extract": {
+        "ok": true,
+        "language": "php",
+        "file": "D:\\university_learning\\4.1\\信息安全工程概论\\06-代码\\demos\\case2_php_cmd\\ping.php",
+        "sink_line": 14,
+        "sink_function": "ping_host",
+        "module_constants": [],
+        "functions": [
+          {
+            "name": "ping_host",
+            "start_line": 11,
+            "end_line": 16,
+            "is_sink": true
+          }
+        ],
+        "direct_calls": [
+          "shell_exec"
+        ],
+        "unresolved_calls": [],
+        "cross_file_missing": false,
+        "snippet_path": "records/demos/case2_php_cmd/run_demo_case2_php_cmd/A-001/snippet.php",
+        "snippet_file": "snippet.php",
+        "constants_note": "PHP 顶层赋值暂不提取"
+      },
+      "harness": {
+        "assemble_ok": true,
+        "assemble_error": null,
+        "language": "php",
+        "harness_file": "harness.php",
+        "harness_path": "D:/university_learning/4.1/信息安全工程概论/06-代码/records/demos/case2_php_cmd/run_demo_case2_php_cmd/A-001/harness.php",
+        "harness_sha": "6f0697247ede5d20",
+        "payload_sha": "3c9d2a1b9d77d41e",
+        "redirects_applied": [
+          {
+            "name": "shell_exec",
+            "count": 1
+          },
+          {
+            "name": "exec",
+            "count": 0
+          },
+          {
+            "name": "system",
+            "count": 0
+          },
+          {
+            "name": "passthru",
+            "count": 0
+          }
+        ],
+        "param_convention": "被测函数第一个形参接收外部输入;harness 以 payload 作为第一个实参调用"
+      },
+      "run": {
+        "env_ok": true,
+        "exit_code": 0,
+        "elapsed_s": null,
+        "replay_command": "docker run --rm -v D:/university_learning/4.1/信息安全工程概论/06-代码/records/demos/case2_php_cmd/run_demo_case2_php_cmd/A-001:/work -w /work php:8.2-cli php harness.php",
+        "env_snapshot": {
+          "image": "php:8.2-cli",
+          "image_id": "sha256:080193293786a2d9442806eca60635516120a30309b694c4292a56a4f8e2d353",
+          "image_available": true,
+          "requirements": [],
+          "deps_install_required": false,
+          "deps_install_done": true,
+          "env_ok": true,
+          "image_id_source": "shell_probe"
+        },
+        "stdout_tail": "@@RESULT@@{\"captured\":{\"sink_api\":\"shell_exec\",\"calls\":[{\"args\":\"ping -c 1 127.0.0.1; echo zxq-demo-marker\"}]},\"payload\":\"127.0.0.1; echo zxq-demo-marker\",\"error\":null}\n",
+        "stderr_tail": ""
+      },
+      "verdict": {
+        "verdict": "TP",
+        "reason": "payload 已到达 sink(共 1 次调用被拦截),且未净化——污点数据未处理即进入危险操作,漏洞成立",
+        "mode": "A",
+        "fix_suggestion": null,
+        "confirmed_by": "execution",
+        "sink_calls": 1
+      },
+      "retries": [],
+      "pending_attempt": null,
+      "overhead": {
+        "llm_calls": 0,
+        "sandbox_runs": 1,
+        "wall_time_s": null
+      },
+      "evidence": {
+        "run_dir": "D:/university_learning/4.1/信息安全工程概论/06-代码/records/demos/case2_php_cmd/run_demo_case2_php_cmd/A-001",
+        "harness_path": "D:/university_learning/4.1/信息安全工程概论/06-代码/records/demos/case2_php_cmd/run_demo_case2_php_cmd/A-001/harness.php",
+        "payload": "127.0.0.1; echo zxq-demo-marker",
+        "env_snapshot": {
+          "image": "php:8.2-cli",
+          "image_id": "sha256:080193293786a2d9442806eca60635516120a30309b694c4292a56a4f8e2d353",
+          "image_available": true,
+          "requirements": [],
+          "deps_install_required": false,
+          "deps_install_done": true,
+          "env_ok": true,
+          "image_id_source": "shell_probe"
+        },
+        "replay_command": "docker run --rm -v D:/university_learning/4.1/信息安全工程概论/06-代码/records/demos/case2_php_cmd/run_demo_case2_php_cmd/A-001:/work -w /work php:8.2-cli php harness.php",
+        "stdout_tail": "@@RESULT@@{\"captured\":{\"sink_api\":\"shell_exec\",\"calls\":[{\"args\":\"ping -c 1 127.0.0.1; echo zxq-demo-marker\"}]},\"payload\":\"127.0.0.1; echo zxq-demo-marker\",\"error\":null}\n"
+      },
+      "mock": {
+        "generated_by": "template",
+        "template": "php:shell_exec",
+        "mock_file": "mock_patch.php",
+        "sink_api": "shell_exec",
+        "language": "php"
+      },
+      "payload": "127.0.0.1; echo zxq-demo-marker",
+      "narrative": {
+        "title": "PHP OS 命令注入 / CWE-78",
+        "language": "php",
+        "cwe": "CWE-78",
+        "cwe_name": "OS 命令注入",
+        "location": {
+          "file": "/src/ping.php",
+          "line": 14,
+          "sink_call_line": 14,
+          "function": "ping_host"
+        },
+        "source": {
+          "desc": "$host 形参",
+          "param": "$host",
+          "origin": "SAST 规则扫描"
+        },
+        "propagation": {
+          "line": 13,
+          "code": "$cmd = \"ping -c 1 \" . $host;"
+        },
+        "sink": {
+          "api": "shell_exec",
+          "line": 14,
+          "code": "$output = shell_exec($cmd);"
+        },
+        "captured_arg": "ping -c 1 127.0.0.1; echo zxq-demo-marker",
+        "payload": "127.0.0.1; echo zxq-demo-marker",
+        "basis": "payload 原样出现在 shell_exec 的实参中且未见净化处理(无 sanitized 标记、无参数绑定),污点路径被执行证实 → 已确认(TP)",
+        "cve_ref": {
+          "cwe": "CWE-78",
+          "cve_id": "CVE-2019-9194",
+          "language": "php",
+          "published": "2019-02-26",
+          "cvss": null,
+          "nvd_cwe": "CWE-78",
+          "summary_zh": "elFinder < 2.1.48 的 PHP connector 存在命令注入",
+          "pattern": "用户输入进入 PHP 侧 shell 执行路径,未过滤 shell 元字符",
+          "nvd_url": "https://nvd.nist.gov/vuln/detail/CVE-2019-9194"
+        },
+        "text": "PHP OS 命令注入(CWE-78):ping.php:14,所属函数 ping_host()。污点源:$host 形参(候选来自SAST 规则扫描)。传播:第 13 行 `$cmd = \"ping -c 1 \" . $host;`,外部输入未经净化即拼接进危险调用的参数。sink:第 14 行 `$output = shell_exec($cmd);`,危险 API 为 shell_exec。沙箱截获的实际实参:`ping -c 1 127.0.0.1; echo zxq-demo-marker`,payload `127.0.0.1; echo zxq-demo-marker` 已到达 sink。payload 原样出现在 shell_exec 的实参中且未见净化处理(无 sanitized 标记、无参数绑定),污点路径被执行证实 → 已确认(TP)。CVE 参照:CVE-2019-9194(elFinder < 2.1.48 的 PHP connector 存在命令注入;CWE-78;NVD 链接见下方)"
+      }
+    }
+  ]
+}

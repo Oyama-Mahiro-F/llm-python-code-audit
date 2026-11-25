@@ -1,26 +1,29 @@
 # 06-代码 · 基于大语言模型的 Python 代码审计系统
 
 > 对应《项目方案》4.3 动态验证模块与开题 4.6 接口契约。
-> **当前状态(2026-11-06):动态验证链路 + LLM 双通道全部实测跑通**——
+> **当前状态(2026-11-26):多语言(含 PHP)+ 前端 + 三演示案例全部跑通**
 >
 > - 10/29:SAST 候选 → Extract → 模板 Mock → Docker 沙箱 → 模式 A 判定,2 条 CWE-89 → **TP×2**;
 > - 10/30:`llm_discover` 第二候选来源接入(真实 DeepSeek),合并验证 **TP=3**;
-> - 11/6:**mock 生成接入 LLM**——SAST 2 条 + LLM 候选 3 条(含无模板的 CWE-78/CWE-22),
->   5 条告警全部由 LLM 生成 mock 并通过输出校验,沙箱复现 **TP=5 / FP=0 / 未确认=0**
->   (LLM 调用 5 次全部入账),详见第七节;
-> - 11/9:**模式 B(LLM 日志推理判定)实现 + E2 消融四配置跑通**——模式 B 带三道确定性
->   护栏,实测抓到模式 A 放过的一个证据弱点并经重试闭环修复确认;数据集选型考证完成
->   (A12:Defects4Py 证伪 → Vul4Py),见第八节与 `05-实验步骤/数据集选型决策`。
+> - 11/6:**mock 生成接入 LLM**(few-shot + 三道校验 + 失败回退),5 条告警 **TP=5 / FP=0**;
+> - 11/9:**模式 B**(LLM 日志推理 + 三道确定性护栏)+ **E2 四配置消融**;重试闭环实战走通一次;
+> - 11/26(落实老师 11/22 反馈 ①②③):
+>   **①判定描述具体化**——新增 `narrative.py`,用该条 finding 自己的证据填空
+>   (污点源/传播行/sink 调用行/沙箱截获实参/payload)并附**经 NVD 核验的 CVE 参照**;
+>   **②前端**——`frontend/app.py`(Streamlit),逐步展开证据链、可复制复现命令;
+>   **③三个可演示案例**——`demos/`(PHP SQL 注入 / PHP 命令注入 / Python 路径穿越),
+>   **三案例全部 TP**,其中两个是 SAST 官方规则集零命中、由 LLM 通道发现。
 
 ## 一、运行环境
 
 | 项 | 值 |
 |---|---|
 | Python | CPython 3.12.13(uv 管理,`.venv`) |
-| tree-sitter / tree-sitter-python | 0.26.0 / 0.26.x |
+| tree-sitter / tree-sitter-python / tree-sitter-php | 0.26.0 / 0.26.x / 0.25.2 |
 | swe-rex(SWE-ReX) | 1.4.0(见"四、接入状态") |
 | Semgrep | 1.182.1,**官方容器** `semgrep/semgrep:latest` 内执行 |
-| 沙箱运行时镜像 | `python:3.12-slim`(Docker Engine 29.5.3 + WSL2) |
+| 沙箱运行时镜像 | `python:3.12-slim`(Python)/ `php:8.2-cli`(PHP) |
+| 前端 | Streamlit 1.67 |
 | 规则集 | `p/default`(官方默认配置,未针对基准调优) |
 
 版本快照见 `records/env.json`(步骤 S1 产物)。
@@ -35,6 +38,8 @@
 │   ├── vuln_cwe78_cmd.py        漏洞样本:os.system 命令注入(CWE-78,11/6 新增)
 │   ├── vuln_cwe22_path.py       漏洞样本:路径穿越(CWE-22,11/6 新增)
 │   └── safe_cwe89_user_dao.py   安全对照:参数化查询(未被规则命中)
+├── demos/                    ★ 三个可明确演示的案例(含 README 与验收话术)
+├── frontend/app.py           ★ Streamlit 演示前端
 ├── auditor/                  自研模块(全部独立可执行入口)
 │   ├── sast_scan.py          SAST 封装(scan 直连 / normalize 两阶段)
 │   ├── llm_discover.py       LLM 候选发现(SAST 之外的第二来源;dry/replay/deepseek 三后端)
@@ -44,6 +49,9 @@
 │   ├── sandbox.py            沙箱执行(docker 直连 / 两阶段 external)
 │   ├── verdict.py            模式 A(确定性)/ 模式 B(LLM 日志推理+三道护栏)
 │   ├── orchestrator.py       编排:prepare+collect+regen 重试闭环(--alerts 支持多来源)
+│   ├── narrative.py          ★ 判定描述具体化(证据填空 + CVE 参照)
+│   ├── cve_refs.json         ★ 经 NVD API 核验的 CVE 参照库
+│   ├── lang.py               多语言分发(.py / .php)
 │   ├── e2.py                 E2 消融报告(none/A/B/full 四配置)
 │   ├── dataset.py            数据集清单构建(S2:dataset_manifest.json)
 │   └── tests/                单元测试 36 项(extract 4 + llm_discover 9 + mock/verdict 23)
@@ -256,7 +264,75 @@ attempt 目录被清理,retry_trace 首行为其残留;修复措施:录制目录
 
 ---
 
-## 九、已知局限(与方案 4.5 对应)
+## 九、多语言 / 判定描述 / 前端 / 三案例(2026-11-26,落实老师反馈)
+
+### 9.1 判定描述具体化(反馈第 1 条)
+
+原 `verdict.reason` 是通用话术("payload 已到达 sink……漏洞成立"),看不出每个样本的
+特点。新增 `auditor/narrative.py`,**纯确定性、不调用大模型**,用该条 finding 自己的
+证据填空,输出结构化描述 + 可直接展示的中文长句:
+
+| 字段 | 来源 | 示例(case1) |
+|---|---|---|
+| 位置 | 告警 + Extract | `user_login.php:15`,函数 `login_check()` |
+| 污点源 | 告警 metavars / 函数签名 | `$user` 形参(候选来自 LLM 通道) |
+| 传播 | 函数体内含形参的实际代码行 | 第 14 行 `$sql = "... '" . $user . "'";` |
+| sink | CAPTURED.sink_api | `mysqli_query` @ 第 15 行 |
+| 截获实参 | 沙箱 stdout 的 `@@RESULT@@` | `SELECT ... 'zxq-demo-marker' OR '1'='1'` |
+| 依据 | 三分类口径 + 是否净化 | 未参数化 → 已确认(TP) |
+| CVE | `cve_refs.json` 按 CWE+语言匹配 | CVE-2019-15573(CVSS 9.8) |
+
+**CVE 参照库** `auditor/cve_refs.json`:10 条,全部经 **NVD CVE API 2.0 逐条核验**
+(记录 descriptions/weaknesses/metrics),`verified_at=2026-11-26`。核验中曾发现
+凭印象的判断与 NVD 字段不符(如 CVE-2021-3129 的 weaknesses 为空),因此库里只放
+核验通过的条目;匹配不到时**留空不臆造**。
+
+### 9.2 前端(反馈第 2 条)
+
+`frontend/app.py`(Streamlit):选案例 → 运行审计 → 统计卡(候选/TP/FP/未确认/LLM 调用)
+→ 逐条 finding:具体描述、五段证据链、代码与 mock 并排、harness 与运行日志可展开、
+CVE 链接、**第三方复现命令一键复制**。
+
+```bash
+cd 06-代码
+.venv/Scripts/python.exe -m streamlit run frontend/app.py
+```
+
+**环境限制(已在界面内明确提示)**:若启动 Streamlit 的进程无法访问 Docker(如
+ZCode 会话沙箱),容器步骤会失败;界面会提示"本次未产生新判定",并回退展示已落盘的
+历史运行结果。在标准终端(WSL2 / PowerShell)启动则无此限制。
+报告按 run_id 隔离(`run_<id>/audit_report.json`),多次运行互不覆盖。
+
+### 9.3 三个可演示案例(反馈第 3 条)
+
+见 [`demos/README.md`](demos/README.md)。三案例 **全部 TP**:
+
+| 案例 | 语言/CWE | 候选来源 | CVE 参照 | SAST 规则集命中 |
+|---|---|---|---|---|
+| case1_php_sqli | PHP / CWE-89 | LLM 通道 | CVE-2019-15573 | p/default、p/php、p/security-audit、p/owasp-top-ten **均 0** |
+| case2_php_cmd | PHP / CWE-78 | SAST(p/default) | CVE-2019-9194 | 1 条(metadata 记 CWE-94,已归一) |
+| case3_python_path | Python / CWE-22 | LLM 通道 | CVE-2007-4559 | p/default **0** |
+
+### 9.4 PHP 支持的三个工程要点
+
+1. **提取**:`lang.py` 按后缀分发语法包;PHP 的函数节点同为 `function_definition`,
+   调用节点为 `function_call_expression`(取 `function` 字段的 `name`);
+2. **mock**:PHP 内建函数不可重定义(无法 monkey-patch),改用**接缝重定向**——
+   组装期把片段里的 `mysqli_query(` 改写为 `__mock_mysqli_query(`,改写次数写入
+   `harness_meta.json::redirects_applied` 可审计;桩函数只记录入参、返回无害值;
+3. **沙箱**:按语言选镜像与执行器(`php:8.2-cli` + `php harness.php`),
+   `env_snapshot.json` 记录镜像 digest。
+
+### 9.5 CWE 归一化(可审计)
+
+Semgrep 的 `command injection` 规则把 CWE 记为 CWE-94(代码注入,父类),而 shell
+命令拼接的准确分类是 CWE-78。新增显式规则 `CWE_NORMALIZE_RULES`(仅在
+"消息含 command injection 且上报 CWE-94" 时触发),**原始值保留在 `cwe_reported`**,
+归一依据写入告警的 `cwe_normalization` 字段。
+
+---
+
+## 十、已知局限(与方案 4.5 对应)
 
 1. Extract 仅取**同文件**函数与被引用的模块级常量,丢失跨文件全局状态
    与净化逻辑;此类样本将按三分类口径归入"**未确认**",如实统计;
@@ -268,6 +344,9 @@ attempt 目录被清理,retry_trace 首行为其残留;修复措施:录制目录
     模式 B 仅作复核与重试触发(见第八节比选结论);
 3. 本机 ZCode 会话内 Python 子进程不可直连 Docker 管道,容器步骤经
    shell 两阶段执行;标准环境用 `orchestrator run` 一体化模式;
+3a. PHP 的接缝重定向只处理**名字直接调用**;`$obj->method(` 与字符串字面量内的
+    同名文本不改写(后者属已知局限,样本设计时避免);
+3b. PHP 侧暂不提取顶层赋值(模块级常量),样本须把依赖写成函数内局部变量;
 4. **系统召回上界受候选来源限制**:SAST 未报出的漏洞不会进入流水线。
    第六节的 LLM 发现通道用于缓解此限制(把发现与规则覆盖解耦),但
    **它本身也产候选、不保证召回**;评测时应区分"分诊召回"(分母=候选数)

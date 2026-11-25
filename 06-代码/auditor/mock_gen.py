@@ -81,14 +81,189 @@ def _payload_cwe89(alert: dict) -> str:
     return f"{MARKER}' OR '1'='1"
 
 
+# ---------------------------------------------------------------- Python 路径穿越模板
+_PY_OPEN_MOCK = '''\
+# --- mock 桩(模板生成,拦截内置 open 文件读取)---
+import json as _json
+
+CAPTURED = {"sink_api": "builtins.open", "calls": []}
+
+
+class _FakeFile:
+    def __init__(self, path):
+        self._path = path
+
+    def read(self):
+        return "MOCK_CONTENT:" + str(self._path)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *a):
+        return False
+
+    def close(self):
+        pass
+
+
+def _fake_open(file=None, *args, **kwargs):
+    CAPTURED["calls"].append({"args": str(file)})
+    return _FakeFile(file)
+
+
+def _install_mock():
+    import builtins
+    builtins.open = _fake_open
+'''
+
+# ---------------------------------------------------------------- PHP 模板
+# PHP 内建函数无法 monkey-patch,改用组装期"接缝重定向":
+# harness 把业务片段中的 NAME(...) 改写为 __mock_NAME(...)(见 redirect 字段),
+# 由桩函数记录入参并返回无害值。
+_PHP_SQLI_MOCK = r'''// --- mock 桩(模板生成,记录 mysqli_query 的 SQL 参数,不执行任何 SQL)---
+$GLOBALS['CAPTURED'] = ['sink_api' => 'mysqli_query', 'calls' => []];
+
+class __MockResult
+{
+    public $num_rows = 0;
+    public function fetch_assoc() { return null; }
+    public function fetch_row() { return null; }
+    public function fetch_array() { return null; }
+}
+
+function __mock_mysqli_query($link, $query)
+{
+    $GLOBALS['CAPTURED']['calls'][] = [
+        'args' => is_string($query) ? $query : var_export($query, true),
+    ];
+    return new __MockResult();
+}
+'''
+
+_PHP_CMD_MOCK = r'''// --- mock 桩(模板生成,记录 shell 命令串,不执行任何命令)---
+$GLOBALS['CAPTURED'] = ['sink_api' => 'shell_exec', 'calls' => []];
+
+function __mock_shell_exec($cmd)
+{
+    $GLOBALS['CAPTURED']['calls'][] = [
+        'args' => is_string($cmd) ? $cmd : var_export($cmd, true),
+    ];
+    return '';
+}
+
+function __mock_exec($cmd, &$output = null, &$code = null)
+{
+    $output = [];
+    $code = 0;
+    $GLOBALS['CAPTURED']['calls'][] = [
+        'args' => is_string($cmd) ? $cmd : var_export($cmd, true),
+    ];
+    return '';
+}
+
+function __mock_system($cmd, &$code = null)
+{
+    $code = 0;
+    $GLOBALS['CAPTURED']['calls'][] = [
+        'args' => is_string($cmd) ? $cmd : var_export($cmd, true),
+    ];
+    return '';
+}
+
+function __mock_passthru($cmd, &$code = null)
+{
+    $code = 0;
+    $GLOBALS['CAPTURED']['calls'][] = [
+        'args' => is_string($cmd) ? $cmd : var_export($cmd, true),
+    ];
+    return '';
+}
+'''
+
+_PHP_PATH_MOCK = r'''// --- mock 桩(模板生成,记录文件读取路径,不读取真实文件)---
+$GLOBALS['CAPTURED'] = ['sink_api' => 'file_get_contents', 'calls' => []];
+
+function __mock_file_get_contents($path)
+{
+    $GLOBALS['CAPTURED']['calls'][] = [
+        'args' => is_string($path) ? $path : var_export($path, true),
+    ];
+    return 'MOCK_CONTENT:' . strval($path);
+}
+'''
+
+PHP_SQLI_PAYLOAD = MARKER + "' OR '1'='1"
+PHP_CMD_PAYLOAD = "127.0.0.1; echo " + MARKER
+PHP_PATH_PAYLOAD = "../../etc/" + MARKER
+
+
+def _payload_const(v: str):
+    return lambda alert: v
+
+
 TEMPLATES = {
-    "sqlite3.Cursor.execute": {
+    # ---------------- python ----------------
+    "py:sqlite3.Cursor.execute": {
+        "language": "python",
         "imports": ["import sqlite3"],
         "mock_code": _SQLITE_MOCK,
         "payload_fn": _payload_cwe89,
+        "redirect": [],
+        "sink_api": "sqlite3.Cursor.execute",
         "cwe_scope": ["CWE-89"],
     },
+    "py:builtins.open": {
+        "language": "python",
+        "imports": [],
+        "mock_code": _PY_OPEN_MOCK,
+        "payload_fn": _payload_const("../../etc/passwd"),
+        "redirect": [],
+        "sink_api": "builtins.open",
+        "cwe_scope": ["CWE-22"],
+    },
+    # ---------------- php ----------------
+    "php:mysqli_query": {
+        "language": "php",
+        "imports": [],
+        "mock_code": _PHP_SQLI_MOCK,
+        "payload_fn": _payload_const(PHP_SQLI_PAYLOAD),
+        "redirect": ["mysqli_query"],
+        "sink_api": "mysqli_query",
+        "cwe_scope": ["CWE-89"],
+    },
+    "php:shell_exec": {
+        "language": "php",
+        "imports": [],
+        "mock_code": _PHP_CMD_MOCK,
+        "payload_fn": _payload_const(PHP_CMD_PAYLOAD),
+        "redirect": ["shell_exec", "exec", "system", "passthru"],
+        "sink_api": "shell_exec",
+        "cwe_scope": ["CWE-78"],
+    },
+    "php:file_get_contents": {
+        "language": "php",
+        "imports": [],
+        "mock_code": _PHP_PATH_MOCK,
+        "payload_fn": _payload_const(PHP_PATH_PAYLOAD),
+        "redirect": ["file_get_contents"],
+        "sink_api": "file_get_contents",
+        "cwe_scope": ["CWE-22"],
+    },
 }
+
+# (language, cwe) → 模板键
+TEMPLATE_SELECTION = {
+    ("python", "CWE-89"): "py:sqlite3.Cursor.execute",
+    ("python", "CWE-22"): "py:builtins.open",
+    ("php", "CWE-89"): "php:mysqli_query",
+    ("php", "CWE-78"): "php:shell_exec",
+    ("php", "CWE-22"): "php:file_get_contents",
+}
+
+
+def pick_template(alert: dict, language: str = "python") -> str | None:
+    """按 (语言, CWE) 选模板;无匹配返回 None(交 LLM 路径或按失败处理)。"""
+    return TEMPLATE_SELECTION.get((language, (alert.get("cwe") or "")))
 
 # ---------------------------------------------------------------- few-shot
 _EXAMPLE_SQLITE = '''{"imports": ["import sqlite3"],
@@ -101,69 +276,113 @@ _EXAMPLE_CMD = '''{"imports": ["import os"],
  "payload": "MARKER; echo pwned",
  "rationale": "掉包 os.system,只记录命令不执行"}'''
 
-PROMPT_TEMPLATE = """你是安全测试工程师。任务:为一段被提取的 Python 业务代码编写 mock 桩与触发 payload,
+_EXAMPLE_PHP_SQLI = '''{"redirect": ["mysqli_query"],
+ "mock_code": "$GLOBALS['CAPTURED'] = ['sink_api' => 'mysqli_query', 'calls' => []];\\nfunction __mock_mysqli_query($link, $query) {\\n    $GLOBALS['CAPTURED']['calls'][] = ['args' => is_string($query) ? $query : var_export($query, true)];\\n    return null;\\n}",
+ "payload": "MARKER' OR '1'='1",
+ "sink_api": "mysqli_query",
+ "rationale": "定义 __mock_mysqli_query 记录 SQL,harness 将 mysqli_query( 重定向到它"}'''
+
+PROMPT_TEMPLATE = """你是安全测试工程师。任务:为一段被提取的 {lang_name} 业务代码编写 mock 桩与触发 payload,
 用于在隔离沙箱中验证一条疑似漏洞告警。这只是一次"带记录的排练":危险操作绝不真实发生。
 
 硬性要求:
-1. mock 桩必须拦截告警指向的危险 sink 调用(函数/方法整体掉包),绝不真实执行危险操作;
+1. mock 桩必须拦截告警指向的危险 sink 调用,绝不真实执行危险操作;
 2. 严格遵守 CAPTURED 契约:
    CAPTURED = {{"sink_api": "<危险API名>", "calls": []}}
    每次拦截到的危险调用向 CAPTURED["calls"] 追加一个 dict,**必须含 "args" 键**
    (危险参数的字符串形式,如 SQL 语句 / 命令行 / 文件路径);
    若该调用方式本身安全(如参数化绑定、白名单校验),额外附加 "sanitized": True;
-   必须定义 _install_mock() 完成掉包;桩内不得真实调用任何危险 API、不得有副作用;
 3. payload 必须包含标记串 "{marker}",并设计成能流到 sink;
    即便你认为告警可能是误报,也请正常构造,由动态验证裁决;
-4. "imports" 列出业务片段引用但未定义、harness 运行所需的 import 语句;
-5. mock_code 中不允许出现对危险 API 的调用形态(允许对它们赋值/掉包)。
+4. mock_code 中不允许出现对危险 API 的调用形态(允许对它们赋值/掉包)。
+
+{lang_rules}
 
 输出严格 JSON(不要输出任何解释文字):
-{{"imports": ["import os", ...],
- "mock_code": "<完整 mock 源码,含 CAPTURED 与 _install_mock()>",
- "payload": "<含 {marker} 的触发输入>",
- "rationale": "<一句话拦截策略>"}}
+{output_schema}
 
 CWE 类型:{cwe}
 原始告警:{alert_message}
 
 few-shot 示例(参考格式与风格,不要照抄内容):
---- 示例 1:拦截 sqlite3 ---
-{example_sqlite}
---- 示例 2:拦截 os.system ---
-{example_cmd}
+{examples}
 
-被提取的业务代码(注意其中引用的外部模块需列入 imports):
-```python
+被提取的业务代码:
+```{fence}
 {snippet}
 ```
 {feedback}
 只输出 JSON。"""
 
+_LANG_RULES = {
+    "python": """5. 语言为 Python:用"掉包"方式拦截(如 sqlite3.connect = 桩),并定义 _install_mock() 完成安装;
+6. "imports" 列出业务片段引用但未定义、harness 运行所需的 import 语句。""",
+    "php": """5. 语言为 PHP:PHP 内建函数无法被重新定义,故采用"接缝重定向":
+   定义名为 __mock_<原函数名> 的桩函数,并在 "redirect" 数组列出需要重定向的原函数名
+   (harness 会把业务片段中的 <原函数名>( 改写为 __mock_<原函数名>( );
+   桩函数返回无害值(字符串返回 ''、结果集返回 null 或最小桩对象);
+6. mock_code 不要包含 <?php 标签(harness 统一加),不要定义 _install_mock(对 PHP 无意义);
+7. "imports" 对 PHP 固定输出空数组。""",
+}
 
-def _build_prompt(alert: dict, snippet: str, feedback: str | None) -> str:
+_SCHEMA = {
+    "python": """{{"imports": ["import os", ...],
+ "mock_code": "<完整 mock 源码,含 CAPTURED 与 _install_mock()>",
+ "payload": "<含 {marker} 的触发输入>",
+ "rationale": "<一句话拦截策略>"}}""",
+    "php": """{{"redirect": ["mysqli_query", ...],
+ "mock_code": "<PHP 桩代码,含 $GLOBALS['CAPTURED'] 与 __mock_<函数名>() 定义,不含 <?php>",
+ "payload": "<含 {marker} 的触发输入>",
+ "sink_api": "<被拦截的危险函数名>",
+ "rationale": "<一句话拦截策略>"}}""",
+}
+
+
+def _build_prompt(alert: dict, snippet: str, feedback: str | None,
+                  language: str = "python") -> str:
     fb = ""
     if feedback:
         fb = ("上一轮尝试失败,判定如下,请修正 mock(注意保持 CAPTURED 契约):\n"
               + feedback + "\n")
+    if language == "php":
+        examples = "--- 示例:拦截 mysqli_query(PHP)---\n" + _EXAMPLE_PHP_SQLI
+        lang_name, fence = "PHP", "php"
+    else:
+        examples = ("--- 示例 1:拦截 sqlite3 ---\n" + _EXAMPLE_SQLITE
+                    + "\n--- 示例 2:拦截 os.system ---\n" + _EXAMPLE_CMD)
+        lang_name, fence = "Python", "python"
     return PROMPT_TEMPLATE.format(
         marker=MARKER, cwe=alert.get("cwe") or "未知",
         alert_message=(alert.get("message") or "")[:300],
-        example_sqlite=_EXAMPLE_SQLITE, example_cmd=_EXAMPLE_CMD,
-        snippet=snippet, feedback=fb,
+        lang_name=lang_name, fence=fence,
+        lang_rules=_LANG_RULES.get(language, _LANG_RULES["python"]),
+        output_schema=_SCHEMA.get(language, _SCHEMA["python"]).format(
+            marker=MARKER),
+        examples=examples, snippet=snippet, feedback=fb,
     )
 
 
-def _validate(mock_code: str, payload: str, imports: list[str]) -> str | None:
+def _validate(mock_code: str, payload: str, imports: list[str],
+              language: str = "python") -> str | None:
     """返回 None 表示通过;否则返回失败原因。"""
     if not isinstance(mock_code, str) or "CAPTURED" not in mock_code:
         return "mock_code 缺少 CAPTURED"
-    if "_install_mock" not in mock_code:
-        return "mock_code 缺少 _install_mock()"
     if not isinstance(payload, str) or MARKER not in payload:
         return f"payload 未包含标记串 {MARKER}"
     for pat in _BLOCKLIST_CALLS:
         if re.search(pat, mock_code):
             return f"mock_code 含危险调用形态:{pat}"
+    if language == "php":
+        # PHP:不能本地 compile,做结构性校验(花括号配平 + 桩定义存在)
+        if "<?php" in mock_code:
+            return "mock_code 不应包含 <?php 标签"
+        if mock_code.count("{") != mock_code.count("}"):
+            return "mock_code 花括号不配平"
+        if "__mock_" not in mock_code:
+            return "mock_code 缺少 __mock_<函数名> 桩定义"
+        return None
+    if "_install_mock" not in mock_code:
+        return "mock_code 缺少 _install_mock()"
     try:
         compile("\n".join(list(imports) + [mock_code]), "<mock>", "exec")
     except SyntaxError as exc:
@@ -171,10 +390,12 @@ def _validate(mock_code: str, payload: str, imports: list[str]) -> str | None:
     return None
 
 
-def _write(run_dir: Path, info: dict) -> dict:
-    (run_dir / "mock_patch.py").write_text(info["mock_code"], encoding="utf-8")
+def _write(run_dir: Path, info: dict, language: str = "python") -> dict:
+    name = "mock_patch.py" if language == "python" else "mock_patch.php"
+    (run_dir / name).write_text(info["mock_code"], encoding="utf-8")
     (run_dir / "payload.txt").write_text(info["payload"], encoding="utf-8")
-    info["mock_path"] = str((run_dir / "mock_patch.py").as_posix())
+    info["mock_path"] = str((run_dir / name).as_posix())
+    info["mock_file"] = name
     info["payload_path"] = str((run_dir / "payload.txt").as_posix())
     (run_dir / "mock_meta.json").write_text(
         json.dumps(info, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -188,19 +409,23 @@ def _fail(run_dir: Path, error: str, **extra) -> dict:
     return info
 
 
-def _template_info(alert: dict, extract_meta: dict, run_dir: Path) -> dict:
-    tpl_name = "sqlite3.Cursor.execute"  # 当前唯一模板
+def _template_info(alert: dict, extract_meta: dict, run_dir: Path,
+                   tpl_name: str) -> dict:
     tpl = TEMPLATES[tpl_name]
     payload = tpl["payload_fn"](alert)
     info = {
         "ok": True, "template": tpl_name,
         "generated_by": "template",
+        "language": tpl["language"],
         "llm_backend": None, "llm_calls": 0,
         "payload": payload, "imports": list(tpl["imports"]),
         "sink_function": extract_meta.get("sink_function"),
-        "mock_code": tpl["mock_code"],
+        "sink_api": tpl.get("sink_api"),
+        # 接缝重定向表:harness 据此把业务片段中的 sink 调用改到 __mock_* 
+        "redirect": list(tpl.get("redirect") or []),
+        "mock_code": tpl["mock_code"].lstrip(),
     }
-    return _write(run_dir, info)
+    return _write(run_dir, info, tpl["language"])
 
 
 def generate(alert: dict, extract_meta: dict, run_dir: str | Path, *,
@@ -209,26 +434,29 @@ def generate(alert: dict, extract_meta: dict, run_dir: str | Path, *,
              feedback: str | None = None, attempt: int = 1) -> dict:
     """生成 mock 桩与 payload。
 
-    backend=None/"template":仅模板(CWE-89);
+    backend=None/"template":仅模板(按 语言×CWE 选择);
     backend="deepseek"/"replay"/"dry":先走 LLM,失败回退模板(如有),
     无模板可回退时返回 ok=False(由编排器按三分类处理)。
     """
     run_dir = Path(run_dir)
     run_dir.mkdir(parents=True, exist_ok=True)
-    snippet_path = run_dir / "snippet.py"
+    language = extract_meta.get("language") or "python"
+    snippet_file = extract_meta.get("snippet_file") or "snippet.py"
+    snippet_path = run_dir / snippet_file
     snippet = (snippet_path.read_text(encoding="utf-8")
                if snippet_path.exists() else "")
 
+    tpl_name = pick_template(alert, language)
+
     if not backend or backend == "template":
-        if (alert.get("cwe") or "") not in \
-                TEMPLATES["sqlite3.Cursor.execute"]["cwe_scope"]:
-            return _fail(run_dir, f"no_template_for_cwe:{alert.get('cwe')}",
+        if tpl_name is None:
+            return _fail(run_dir, f"no_template_for:{language}/{alert.get('cwe')}",
                          llm_backend=None, llm_calls=0)
-        return _template_info(alert, extract_meta, run_dir)
+        return _template_info(alert, extract_meta, run_dir, tpl_name)
 
     be = make_backend(backend, model=model, replay_file=replay_file,
                       record_dir=record_dir)
-    prompt = _build_prompt(alert, snippet, feedback)
+    prompt = _build_prompt(alert, snippet, feedback, language)
     key = f"{alert.get('alert_id', 'alert')}::attempt{attempt}"
     llm_error = None
     try:
@@ -242,7 +470,7 @@ def generate(alert: dict, extract_meta: dict, run_dir: str | Path, *,
             # replay 为离线回放、零 API 成本,不计入 LLM 调用预算
             "llm_calls": (0 if backend == "replay"
                           else getattr(be, "calls", 0)),
-            "prompt_version": MOCK_PROMPT_VERSION,
+            "prompt_version": MOCK_PROMPT_VERSION, "language": language,
             "attempt": attempt, "sink_function": extract_meta.get("sink_function")}
     if raw is None:
         info["llm_error"] = llm_error
@@ -257,7 +485,8 @@ def generate(alert: dict, extract_meta: dict, run_dir: str | Path, *,
             if not isinstance(imports, list):
                 imports = []
             reason = _validate(str(item.get("mock_code") or ""),
-                               str(item.get("payload") or ""), imports)
+                               str(item.get("payload") or ""), imports,
+                               language)
             if reason:
                 info["llm_error"] = f"校验失败:{reason}"
             else:
@@ -266,18 +495,20 @@ def generate(alert: dict, extract_meta: dict, run_dir: str | Path, *,
                     "mock_code": str(item["mock_code"]),
                     "payload": str(item["payload"]),
                     "imports": [str(x) for x in imports],
+                    "redirect": [str(x) for x in (item.get("redirect") or [])],
+                    "sink_api": item.get("sink_api"),
                     "rationale": str(item.get("rationale") or "")[:300],
                 })
-                return _write(run_dir, info)
+                return _write(run_dir, info, language)
 
     # ---- 回退:模板保底 ----
-    if (alert.get("cwe") or "") in TEMPLATES["sqlite3.Cursor.execute"]["cwe_scope"]:
-        info_fb = _template_info(alert, extract_meta, run_dir)
+    if tpl_name is not None:
+        info_fb = _template_info(alert, extract_meta, run_dir, tpl_name)
         info_fb["generated_by"] = "llm->fallback-template"
         info_fb["fallback_reason"] = info.get("llm_error")
         info_fb["llm_calls"] = info.get("llm_calls", 0)
         info_fb["llm_backend"] = backend
-        return _write(run_dir, info_fb)
+        return _write(run_dir, info_fb, language)
     return _fail(run_dir, f"llm_failed_and_no_template:{info.get('llm_error')}",
                  **{k: v for k, v in info.items()
                     if k in ("llm_backend", "llm_calls", "attempt")})

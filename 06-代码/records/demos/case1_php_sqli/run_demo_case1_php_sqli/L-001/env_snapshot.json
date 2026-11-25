@@ -1,0 +1,10 @@
+{
+  "image": "php:8.2-cli",
+  "image_id": "sha256:080193293786a2d9442806eca60635516120a30309b694c4292a56a4f8e2d353",
+  "image_available": true,
+  "requirements": [],
+  "deps_install_required": false,
+  "deps_install_done": true,
+  "env_ok": true,
+  "image_id_source": "shell_probe"
+}

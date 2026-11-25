@@ -1,0 +1,4 @@
+{
+  "report_reader.py::read_report": "[{\"cwe\": \"CWE-22\", \"line\": 18, \"source\": \"report_name 参数（外部可控输入）\", \"sink\": \"open\", \"reason\": \"report_name 未经路径规范化或校验即拼接进文件路径并传给 open，可被 ../ 序列穿越目录读取任意文件\", \"confidence\": 0.9}]",
+  "report_reader.py::list_reports": "[]"
+}

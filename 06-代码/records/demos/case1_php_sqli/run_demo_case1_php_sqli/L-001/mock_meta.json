@@ -1,0 +1,19 @@
+{
+  "ok": true,
+  "template": "php:mysqli_query",
+  "generated_by": "template",
+  "language": "php",
+  "llm_backend": null,
+  "llm_calls": 0,
+  "payload": "zxq-demo-marker' OR '1'='1",
+  "imports": [],
+  "sink_function": "login_check",
+  "sink_api": "mysqli_query",
+  "redirect": [
+    "mysqli_query"
+  ],
+  "mock_code": "// --- mock 桩(模板生成,记录 mysqli_query 的 SQL 参数,不执行任何 SQL)---\n$GLOBALS['CAPTURED'] = ['sink_api' => 'mysqli_query', 'calls' => []];\n\nclass __MockResult\n{\n    public $num_rows = 0;\n    public function fetch_assoc() { return null; }\n    public function fetch_row() { return null; }\n    public function fetch_array() { return null; }\n}\n\nfunction __mock_mysqli_query($link, $query)\n{\n    $GLOBALS['CAPTURED']['calls'][] = [\n        'args' => is_string($query) ? $query : var_export($query, true),\n    ];\n    return new __MockResult();\n}\n",
+  "mock_path": "records/demos/case1_php_sqli/run_demo_case1_php_sqli/L-001/mock_patch.php",
+  "mock_file": "mock_patch.php",
+  "payload_path": "records/demos/case1_php_sqli/run_demo_case1_php_sqli/L-001/payload.txt"
+}

@@ -25,7 +25,7 @@ SINK_LINE = next(i + 1 for i, ln in enumerate(_LINES)
 
 class TestExtract(unittest.TestCase):
     def test_enclosing_function_is_sink_function(self):
-        tree, _ = extract.parse_file(SAMPLE)
+        tree, _, _lang = extract.parse_file(SAMPLE)
         fn = extract.find_enclosing_function(tree.root_node, SINK_LINE)
         self.assertIsNotNone(fn)
         name = fn.child_by_field_name("name").text.decode()

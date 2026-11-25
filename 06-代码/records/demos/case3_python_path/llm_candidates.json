@@ -1,0 +1,43 @@
+{
+  "tool": "llm_discover",
+  "backend": "deepseek",
+  "model": "deepseek-chat",
+  "prompt_version": "v1-2026-10-30",
+  "cwe_scope": [
+    "CWE-89",
+    "CWE-78",
+    "CWE-22",
+    "CWE-79"
+  ],
+  "generated_at": "2026-11-25T19:56:21.312603+00:00",
+  "ok": true,
+  "stats": {
+    "files": 1,
+    "functions": 2,
+    "skipped": 0,
+    "llm_calls": 2,
+    "candidates": 1,
+    "errors": 0
+  },
+  "prompt_chars_total": 1151,
+  "errors_from_tool": [],
+  "alerts": [
+    {
+      "alert_id": "L-001",
+      "check_id": "llm.discover.cwe22",
+      "path": "report_reader.py",
+      "line": 18,
+      "col": null,
+      "end_line": 18,
+      "cwe": "CWE-22",
+      "message": "LLM 候选(未经动态验证):report_name 未经路径规范化或校验即拼接进文件路径并传给 open，可被 ../ 序列穿越目录读取任意文件",
+      "metavars": {
+        "source": "report_name 参数（外部可控输入）",
+        "sink": "open",
+        "function": "read_report",
+        "confidence_llm_self_report": 0.9,
+        "note": "置信度为 LLM 自述,不参与判定"
+      }
+    }
+  ]
+}

@@ -51,10 +51,9 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-import tree_sitter_python as tspython
-from tree_sitter import Language, Parser
+from tree_sitter import Parser
 
-PY_LANGUAGE = Language(tspython.language())
+from . import lang
 
 DEEPSEEK_URL = "https://api.deepseek.com/chat/completions"
 DEFAULT_MODEL = "deepseek-chat"
@@ -71,7 +70,7 @@ PROMPT_TEMPLATE = """你是代码安全审计助手。请只做一件事:找出�
 行号范围:{start_line}-{end_line}
 
 函数源码:
-```python
+```{fence}
 {code}
 ```
 
@@ -114,7 +113,7 @@ def iter_top_functions(root):
 def slice_functions(path: str | Path, max_chars: int) -> list[dict]:
     """把一个源文件切成若干函数单元;超过 max_chars 的函数跳过并记录。"""
     src = Path(path).read_bytes()
-    tree = Parser(PY_LANGUAGE).parse(src)
+    tree = Parser(lang.language_of(path)).parse(src)
     out = []
     for node in iter_top_functions(tree.root_node):
         name_node = node.child_by_field_name("name")
@@ -138,7 +137,9 @@ def slice_functions(path: str | Path, max_chars: int) -> list[dict]:
 
 
 def build_prompt(unit: dict, filename: str, cwe_scope: list[str]) -> str:
+    fence = "php" if str(filename).lower().endswith((".php", ".phtml")) else "python"
     return PROMPT_TEMPLATE.format(
+        fence=fence,
         cwe_scope="、".join(cwe_scope),
         filename=filename,
         func_name=unit["name"],
@@ -302,7 +303,7 @@ def discover(project_dir: str | Path, out_path: str | Path, *,
     project_dir = Path(project_dir).resolve()
     out_path = Path(out_path)
     cwe_scope = cwe_scope or list(DEFAULT_CWE_SCOPE)
-    patterns = patterns or ["*.py"]
+    patterns = patterns or ["*.py", "*.php"]
 
     be = make_backend(backend, model=model, replay_file=replay_file,
                       record_dir=record_dir)
@@ -413,7 +414,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--model", default=DEFAULT_MODEL)
     ap.add_argument("--cwe", default=",".join(DEFAULT_CWE_SCOPE),
                     help="逗号分隔的 CWE 范围")
-    ap.add_argument("--pattern", default="*.py", help="文件匹配模式")
+    ap.add_argument("--pattern", default=None,
+                    help="文件匹配模式(默认 *.py 与 *.php)")
     ap.add_argument("--max-functions", type=int, default=50,
                     help="最多送 LLM 的函数数(预算控制)")
     ap.add_argument("--max-chars", type=int, default=8000,
@@ -427,7 +429,8 @@ def main(argv: list[str] | None = None) -> int:
         result = discover(
             args.project, args.out,
             backend=args.backend, model=args.model, cwe_scope=cwe_scope,
-            patterns=[args.pattern], max_functions=args.max_functions,
+            patterns=[args.pattern] if args.pattern else None,
+            max_functions=args.max_functions,
             max_chars=args.max_chars, replay_file=args.replay_file,
             record_dir=args.record_dir,
         )

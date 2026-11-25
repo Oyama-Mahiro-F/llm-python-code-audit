@@ -72,7 +72,7 @@ class TestMockGenTemplate(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             info = mock_gen.generate(ALERT_78, EXTRACT, td)
             self.assertFalse(info["ok"])
-            self.assertIn("no_template_for_cwe", info["error"])
+            self.assertIn("no_template_for", info["error"])
 
 
 class TestMockGenLLM(unittest.TestCase):

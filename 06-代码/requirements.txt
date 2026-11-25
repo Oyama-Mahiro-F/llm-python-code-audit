@@ -10,3 +10,5 @@ swe-rex>=0.1
 # swe-rex 依赖(1.4.0 元数据未自动带入)
 aiohttp>=3.9
 requests>=2.31
+tree-sitter-php>=0.25
+streamlit>=1.30

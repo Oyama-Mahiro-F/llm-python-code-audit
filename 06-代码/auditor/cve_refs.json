@@ -1,0 +1,118 @@
+{
+  "library": "CVE 参照库(用于判定描述与前端展示)",
+  "verified_at": "2026-11-26",
+  "method": "NVD CVE API 2.0 逐条按 cveId 查询(services.nvd.nist.gov/rest/json/cves/2.0),读取 descriptions / weaknesses / metrics 字段核验;语言归属按受影响产品判断。核验中曾发现凭印象认为属于某 CWE 的 CVE 在 NVD 的 weaknesses 字段为空(如 CVE-2021-3129),故一律以本轮 API 返回为准,不采用记忆值。",
+  "usage": "按 cwe + language 精确匹配;无语言匹配则退化为仅按 cwe 匹配;仍无则返回 null(前端/报告中不展示 CVE 参照,不臆造)",
+  "entries": [
+    {
+      "cwe": "CWE-89",
+      "cve_id": "CVE-2019-15573",
+      "language": "php",
+      "published": "2019-08-26",
+      "cvss": "9.8 CRITICAL",
+      "nvd_cwe": "CWE-89",
+      "summary_zh": "Gesior-AAC 的 tankyou.php 存在 SQL 注入:用户可控输入未加处理即拼入 SQL 语句",
+      "pattern": "外部输入经字符串拼接进入 SQL 查询,未使用预处理语句/参数绑定",
+      "nvd_url": "https://nvd.nist.gov/vuln/detail/CVE-2019-15573"
+    },
+    {
+      "cwe": "CWE-89",
+      "cve_id": "CVE-2019-18622",
+      "language": "php",
+      "published": "2019-11-22",
+      "cvss": "9.8 CRITICAL",
+      "nvd_cwe": "CWE-89",
+      "summary_zh": "phpMyAdmin < 4.9.2 的 designer 功能:构造的库名/表名可触发 SQL 注入",
+      "pattern": "标识符/名称类输入未做白名单校验即拼入 SQL",
+      "nvd_url": "https://nvd.nist.gov/vuln/detail/CVE-2019-18622"
+    },
+    {
+      "cwe": "CWE-89",
+      "cve_id": "CVE-2024-27956",
+      "language": "php",
+      "published": "2024-03-21",
+      "cvss": null,
+      "nvd_cwe": "CWE-89",
+      "summary_zh": "WordPress 插件 Automatic(≤3.92.0)存在 SQL 注入",
+      "pattern": "请求参数直接拼入 SQL 语句",
+      "nvd_url": "https://nvd.nist.gov/vuln/detail/CVE-2024-27956"
+    },
+    {
+      "cwe": "CWE-78",
+      "cve_id": "CVE-2019-9194",
+      "language": "php",
+      "published": "2019-02-26",
+      "cvss": null,
+      "nvd_cwe": "CWE-78",
+      "summary_zh": "elFinder < 2.1.48 的 PHP connector 存在命令注入",
+      "pattern": "用户输入进入 PHP 侧 shell 执行路径,未过滤 shell 元字符",
+      "nvd_url": "https://nvd.nist.gov/vuln/detail/CVE-2019-9194"
+    },
+    {
+      "cwe": "CWE-78",
+      "cve_id": "CVE-2019-10774",
+      "language": "php",
+      "published": "2019-12-30",
+      "cvss": null,
+      "nvd_cwe": "CWE-78",
+      "summary_zh": "php-shellcommand < 1.6.1 存在命令注入,可利用导致任意代码执行",
+      "pattern": "拼接后的命令字符串交给系统 shell 执行",
+      "nvd_url": "https://nvd.nist.gov/vuln/detail/CVE-2019-10774"
+    },
+    {
+      "cwe": "CWE-78",
+      "cve_id": "CVE-2008-4304",
+      "language": "php",
+      "published": "2008-12-23",
+      "cvss": null,
+      "nvd_cwe": "CWE-78",
+      "summary_zh": "phpCollab 2.5 rc3 的 general/login.php:可通过 shell 元字符执行任意命令",
+      "pattern": "登录参数未净化即进入 shell 命令",
+      "nvd_url": "https://nvd.nist.gov/vuln/detail/CVE-2008-4304"
+    },
+    {
+      "cwe": "CWE-22",
+      "cve_id": "CVE-2008-0196",
+      "language": "php",
+      "published": "2008-01-10",
+      "cvss": null,
+      "nvd_cwe": "CWE-22",
+      "summary_zh": "WordPress 2.0.11 及更早版本存在多处目录穿越,可通过 .. 读取任意文件",
+      "pattern": "外部输入拼入文件路径,未做规范化与目录约束",
+      "nvd_url": "https://nvd.nist.gov/vuln/detail/CVE-2008-0196"
+    },
+    {
+      "cwe": "CWE-22",
+      "cve_id": "CVE-2007-5802",
+      "language": "php",
+      "published": "2007-11-03",
+      "cvss": null,
+      "nvd_cwe": "CWE-22",
+      "summary_zh": "Synergiser 1.2 RC1 的 index.php 存在目录穿越,可包含并执行任意文件",
+      "pattern": "路径参数未经白名单校验直接用于文件包含",
+      "nvd_url": "https://nvd.nist.gov/vuln/detail/CVE-2007-5802"
+    },
+    {
+      "cwe": "CWE-22",
+      "cve_id": "CVE-2007-4559",
+      "language": "python",
+      "published": "2007-08-28",
+      "cvss": null,
+      "nvd_cwe": "CWE-22",
+      "summary_zh": "Python tarfile 模块的 extract/extractall 存在目录穿越,可覆盖任意文件",
+      "pattern": "归档内路径未规范化即用于文件写入",
+      "nvd_url": "https://nvd.nist.gov/vuln/detail/CVE-2007-4559"
+    },
+    {
+      "cwe": "CWE-22",
+      "cve_id": "CVE-2021-42013",
+      "language": "c",
+      "published": "2021-10-07",
+      "cvss": null,
+      "nvd_cwe": "CWE-22",
+      "summary_zh": "Apache HTTP Server 2.4.50(CVE-2021-41773 修复不完整):路径穿越可将 URL 映射到配置目录之外",
+      "pattern": "URL 路径解码后未规范化即拼接根目录",
+      "nvd_url": "https://nvd.nist.gov/vuln/detail/CVE-2021-42013"
+    }
+  ]
+}

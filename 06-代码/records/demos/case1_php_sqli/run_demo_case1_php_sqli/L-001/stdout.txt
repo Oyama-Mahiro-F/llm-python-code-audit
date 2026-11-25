@@ -1,0 +1,1 @@
+@@RESULT@@{"captured":{"sink_api":"mysqli_query","calls":[{"args":"SELECT id, name FROM users WHERE name = 'zxq-demo-marker' OR '1'='1'"}]},"payload":"zxq-demo-marker' OR '1'='1","error":null}

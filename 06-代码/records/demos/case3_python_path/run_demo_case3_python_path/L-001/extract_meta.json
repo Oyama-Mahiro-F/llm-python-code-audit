@@ -1,0 +1,26 @@
+{
+  "ok": true,
+  "language": "python",
+  "file": "D:\\university_learning\\4.1\\信息安全工程概论\\06-代码\\demos\\case3_python_path\\report_reader.py",
+  "sink_line": 18,
+  "sink_function": "read_report",
+  "module_constants": [
+    "REPORT_DIR = \"/var/app/reports\""
+  ],
+  "functions": [
+    {
+      "name": "read_report",
+      "start_line": 16,
+      "end_line": 19,
+      "is_sink": true
+    }
+  ],
+  "direct_calls": [
+    "open"
+  ],
+  "unresolved_calls": [],
+  "cross_file_missing": false,
+  "snippet_path": "records/demos/case3_python_path/run_demo_case3_python_path/L-001/snippet.py",
+  "snippet_file": "snippet.py",
+  "constants_note": null
+}

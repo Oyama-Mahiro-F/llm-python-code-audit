@@ -1,0 +1,3 @@
+{
+  "user_login.php::login_check": "[{\"cwe\": \"CWE-89\", \"line\": 14, \"source\": \"函数参数 $user(外部可控输入)\", \"sink\": \"mysqli_query\", \"reason\": \"$user 未经任何净化直接拼接进 SQL 语句并交给 mysqli_query 执行,存在 SQL 注入。\", \"confidence\": 0.95}]"
+}

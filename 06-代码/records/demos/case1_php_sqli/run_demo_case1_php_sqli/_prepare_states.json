@@ -1,0 +1,164 @@
+[
+  {
+    "alert_id": "L-001",
+    "cwe": "CWE-89",
+    "source_alert": {
+      "alert_id": "L-001",
+      "check_id": "llm.discover.cwe89",
+      "path": "user_login.php",
+      "line": 14,
+      "end_line": 14,
+      "message": "LLM 候选(未经动态验证):$user 未经任何净化直接拼接进 SQL 语句并交给 mysqli_query 执行,存在 SQL 注入。",
+      "metavars": {
+        "source": "函数参数 $user(外部可控输入)",
+        "sink": "mysqli_query",
+        "function": "login_check",
+        "confidence_llm_self_report": 0.95,
+        "note": "置信度为 LLM 自述,不参与判定"
+      }
+    },
+    "static_understanding": {
+      "status": "llm_pending",
+      "note": "逐告警静态理解未接入;候选发现已由 llm_discover 覆盖"
+    },
+    "extract": {
+      "ok": true,
+      "language": "php",
+      "file": "D:\\university_learning\\4.1\\信息安全工程概论\\06-代码\\demos\\case1_php_sqli\\user_login.php",
+      "sink_line": 14,
+      "sink_function": "login_check",
+      "module_constants": [],
+      "functions": [
+        {
+          "name": "login_check",
+          "start_line": 11,
+          "end_line": 17,
+          "is_sink": true
+        }
+      ],
+      "direct_calls": [
+        "mysqli_query"
+      ],
+      "unresolved_calls": [],
+      "cross_file_missing": false,
+      "snippet_path": "records/demos/case1_php_sqli/run_demo_case1_php_sqli/L-001/snippet.php",
+      "snippet_file": "snippet.php",
+      "constants_note": "PHP 顶层赋值暂不提取"
+    },
+    "harness": {
+      "assemble_ok": true,
+      "assemble_error": null,
+      "language": "php",
+      "harness_file": "harness.php",
+      "harness_path": "D:/university_learning/4.1/信息安全工程概论/06-代码/records/demos/case1_php_sqli/run_demo_case1_php_sqli/L-001/harness.php",
+      "harness_sha": "ef92dcf69b799abb",
+      "payload_sha": "f3fa044f9911dec8",
+      "redirects_applied": [
+        {
+          "name": "mysqli_query",
+          "count": 1
+        }
+      ],
+      "param_convention": "被测函数第一个形参接收外部输入;harness 以 payload 作为第一个实参调用"
+    },
+    "run": {
+      "env_ok": true,
+      "exit_code": 0,
+      "elapsed_s": null,
+      "replay_command": "docker run --rm -v D:/university_learning/4.1/信息安全工程概论/06-代码/records/demos/case1_php_sqli/run_demo_case1_php_sqli/L-001:/work -w /work php:8.2-cli php harness.php",
+      "env_snapshot": {
+        "image": "php:8.2-cli",
+        "image_id": "sha256:080193293786a2d9442806eca60635516120a30309b694c4292a56a4f8e2d353",
+        "image_available": true,
+        "requirements": [],
+        "deps_install_required": false,
+        "deps_install_done": true,
+        "env_ok": true,
+        "image_id_source": "shell_probe"
+      },
+      "stdout_tail": "@@RESULT@@{\"captured\":{\"sink_api\":\"mysqli_query\",\"calls\":[{\"args\":\"SELECT id, name FROM users WHERE name = 'zxq-demo-marker' OR '1'='1'\"}]},\"payload\":\"zxq-demo-marker' OR '1'='1\",\"error\":null}\n",
+      "stderr_tail": ""
+    },
+    "verdict": {
+      "verdict": "TP",
+      "reason": "payload 已到达 sink(共 1 次调用被拦截),且未净化——污点数据未处理即进入危险操作,漏洞成立",
+      "mode": "A",
+      "fix_suggestion": null,
+      "confirmed_by": "execution",
+      "sink_calls": 1
+    },
+    "retries": [],
+    "pending_attempt": null,
+    "overhead": {
+      "llm_calls": 0,
+      "sandbox_runs": 1,
+      "wall_time_s": null
+    },
+    "evidence": {
+      "run_dir": "D:/university_learning/4.1/信息安全工程概论/06-代码/records/demos/case1_php_sqli/run_demo_case1_php_sqli/L-001",
+      "harness_path": "D:/university_learning/4.1/信息安全工程概论/06-代码/records/demos/case1_php_sqli/run_demo_case1_php_sqli/L-001/harness.php",
+      "payload": "zxq-demo-marker' OR '1'='1",
+      "env_snapshot": {
+        "image": "php:8.2-cli",
+        "image_id": "sha256:080193293786a2d9442806eca60635516120a30309b694c4292a56a4f8e2d353",
+        "image_available": true,
+        "requirements": [],
+        "deps_install_required": false,
+        "deps_install_done": true,
+        "env_ok": true,
+        "image_id_source": "shell_probe"
+      },
+      "replay_command": "docker run --rm -v D:/university_learning/4.1/信息安全工程概论/06-代码/records/demos/case1_php_sqli/run_demo_case1_php_sqli/L-001:/work -w /work php:8.2-cli php harness.php",
+      "stdout_tail": "@@RESULT@@{\"captured\":{\"sink_api\":\"mysqli_query\",\"calls\":[{\"args\":\"SELECT id, name FROM users WHERE name = 'zxq-demo-marker' OR '1'='1'\"}]},\"payload\":\"zxq-demo-marker' OR '1'='1\",\"error\":null}\n"
+    },
+    "mock": {
+      "generated_by": "template",
+      "template": "php:mysqli_query",
+      "mock_file": "mock_patch.php",
+      "sink_api": "mysqli_query",
+      "language": "php"
+    },
+    "payload": "zxq-demo-marker' OR '1'='1",
+    "narrative": {
+      "title": "PHP SQL 注入 / CWE-89",
+      "language": "php",
+      "cwe": "CWE-89",
+      "cwe_name": "SQL 注入",
+      "location": {
+        "file": "user_login.php",
+        "line": 14,
+        "sink_call_line": 15,
+        "function": "login_check"
+      },
+      "source": {
+        "desc": "函数参数 $user(外部可控输入)",
+        "param": "$user",
+        "origin": "LLM 候选发现通道"
+      },
+      "propagation": {
+        "line": 14,
+        "code": "$sql = \"SELECT id, name FROM users WHERE name = '\" . $user . \"'\";"
+      },
+      "sink": {
+        "api": "mysqli_query",
+        "line": 15,
+        "code": "$res = mysqli_query($conn, $sql);"
+      },
+      "captured_arg": "SELECT id, name FROM users WHERE name = 'zxq-demo-marker' OR '1'='1'",
+      "payload": "zxq-demo-marker' OR '1'='1",
+      "basis": "payload 原样出现在 mysqli_query 的实参中且未见净化处理(无 sanitized 标记、无参数绑定),污点路径被执行证实 → 已确认(TP)",
+      "cve_ref": {
+        "cwe": "CWE-89",
+        "cve_id": "CVE-2019-15573",
+        "language": "php",
+        "published": "2019-08-26",
+        "cvss": "9.8 CRITICAL",
+        "nvd_cwe": "CWE-89",
+        "summary_zh": "Gesior-AAC 的 tankyou.php 存在 SQL 注入:用户可控输入未加处理即拼入 SQL 语句",
+        "pattern": "外部输入经字符串拼接进入 SQL 查询,未使用预处理语句/参数绑定",
+        "nvd_url": "https://nvd.nist.gov/vuln/detail/CVE-2019-15573"
+      },
+      "text": "PHP SQL 注入(CWE-89):user_login.php:15,所属函数 login_check()。污点源:函数参数 $user(外部可控输入)(候选来自LLM 候选发现通道)。传播:第 14 行 `$sql = \"SELECT id, name FROM users WHERE name = '\" . $user . \"'\";`,外部输入未经净化即拼接进危险调用的参数。sink:第 15 行 `$res = mysqli_query($conn, $sql);`,危险 API 为 mysqli_query。沙箱截获的实际实参:`SELECT id, name FROM users WHERE name = 'zxq-demo-marker' OR '1'='1'`,payload `zxq-demo-marker' OR '1'='1` 已到达 sink。payload 原样出现在 mysqli_query 的实参中且未见净化处理(无 sanitized 标记、无参数绑定),污点路径被执行证实 → 已确认(TP)。CVE 参照:CVE-2019-15573(Gesior-AAC 的 tankyou.php 存在 SQL 注入:用户可控输入未加处理即拼入 SQL 语句;CWE-89,CVSS 9.8 CRITICAL;NVD 链接见下方)"
+    }
+  }
+]

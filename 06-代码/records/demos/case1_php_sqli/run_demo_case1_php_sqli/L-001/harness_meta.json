@@ -1,0 +1,16 @@
+{
+  "assemble_ok": true,
+  "assemble_error": null,
+  "language": "php",
+  "harness_file": "harness.php",
+  "harness_path": "D:/university_learning/4.1/信息安全工程概论/06-代码/records/demos/case1_php_sqli/run_demo_case1_php_sqli/L-001/harness.php",
+  "harness_sha": "ef92dcf69b799abb",
+  "payload_sha": "f3fa044f9911dec8",
+  "redirects_applied": [
+    {
+      "name": "mysqli_query",
+      "count": 1
+    }
+  ],
+  "param_convention": "被测函数第一个形参接收外部输入;harness 以 payload 作为第一个实参调用"
+}

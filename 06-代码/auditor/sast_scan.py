@@ -27,6 +27,23 @@ from pathlib import Path
 SEMGREP_IMAGE = "semgrep/semgrep:latest"
 SEMGREP_TIMEOUT_S = 900
 
+# CWE 归一化(显式、可审计):Semgrep 部分规则把"OS 命令注入"标为 CWE-94
+# (代码注入,父类),但 shell 命令拼接的准确分类是 CWE-78。
+# 仅当 消息含 "command injection" 且 上报 CWE 为 CWE-94 时归一,
+# 原始值保留在 cwe_reported 字段,并在 cwe_normalization 中记录依据。
+CWE_NORMALIZE_RULES = [
+    {"from": "CWE-94", "to": "CWE-78", "when_message_contains": "command injection",
+     "reason": "Semgrep 规则 metadata 记为 CWE-94(代码注入),shell 命令拼接的准确分类为 CWE-78(OS 命令注入)"},
+]
+
+
+def _normalize_cwe(cwe: str | None, message: str | None) -> tuple[str | None, dict | None]:
+    msg = (message or "").lower()
+    for rule in CWE_NORMALIZE_RULES:
+        if cwe == rule["from"] and rule["when_message_contains"] in msg:
+            return rule["to"], rule
+    return cwe, None
+
 
 def _cwe_of(extra: dict) -> str | None:
     meta = extra.get("metadata") or {}
@@ -112,17 +129,24 @@ def normalize(raw_path: str | Path, out_path: str | Path,
     alerts = []
     for i, r in enumerate(raw.get("results", []), start=1):
         start, end = r.get("start", {}), r.get("end", {})
-        alerts.append({
+        cwe_reported = _cwe_of(r.get("extra", {}))
+        message = (r.get("extra", {}) or {}).get("message")
+        cwe, rule_hit = _normalize_cwe(cwe_reported, message)
+        entry = {
             "alert_id": f"A-{i:03d}",
             "check_id": r.get("check_id"),
             "path": r.get("path"),
             "line": start.get("line"),
             "col": start.get("col"),
             "end_line": end.get("line"),
-            "cwe": _cwe_of(r.get("extra", {})),
-            "message": (r.get("extra", {}) or {}).get("message"),
+            "cwe": cwe,
+            "message": message,
             "metavars": (r.get("extra", {}) or {}).get("metavars"),
-        })
+        }
+        if rule_hit is not None:
+            entry["cwe_reported"] = cwe_reported
+            entry["cwe_normalization"] = rule_hit
+        alerts.append(entry)
     result = {
         "tool": "semgrep",
         "version": raw.get("version"),
