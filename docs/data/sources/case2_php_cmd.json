@@ -1,0 +1,10 @@
+{
+ "id": "case2_php_cmd",
+ "sources": [
+  {
+   "path": "ping.php",
+   "language": "php",
+   "code": "<?php\n// ============================================================================\n// 演示案例 2:PHP 命令注入(CWE-78)\n// 对应真实漏洞:CVE-2019-9194 — elFinder < 2.1.48 PHP connector 命令注入\n//   NVD: https://nvd.nist.gov/vuln/detail/CVE-2019-9194\n//   同模式参照:CVE-2019-10774 — php-shellcommand < 1.6.1 命令注入\n// 漏洞模式:外部输入拼进 shell 命令串,未过滤 shell 元字符(; | && 等)\n// 说明:第一个形参接收外部输入(真实代码中来自 $_POST['host'])。\n// ============================================================================\n\nfunction ping_host($host)\n{\n    $cmd = \"ping -c 1 \" . $host;\n    $output = shell_exec($cmd);\n    return $output;\n}\n"
+  }
+ ]
+}

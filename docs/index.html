@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>可验证的大模型代码审计系统 · 证据浏览器</title>
+<meta name="description" content="浏览已落盘的代码审计证据链：判定、污点源、传播、危险操作点、沙箱截获实参、CVE 参照、复现命令。" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="logo">🛡️</span>
+    <div>
+      <h1>可验证的大模型代码审计系统</h1>
+      <p class="tagline">判定依据不是模型的自述，而是代码在隔离沙箱里<b>真的跑出来的执行结果</b></p>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <a class="gh" href="https://github.com/Oyama-Mahiro-F/llm-python-code-audit" target="_blank" rel="noopener">GitHub 仓库 ↗</a>
+  </div>
+</header>
+
+<div id="boundary" class="boundary" role="note"></div>
+
+<main class="layout">
+  <aside class="sidebar">
+    <h2 class="side-title">演示案例</h2>
+    <div id="caseList" class="case-list"></div>
+
+    <h2 class="side-title">自带 Key 分析 <span class="beta">可选</span></h2>
+    <div class="keybox">
+      <label for="apiKey">DeepSeek API Key</label>
+      <input id="apiKey" type="password" placeholder="sk-..." autocomplete="off" spellcheck="false" />
+      <label class="remember"><input id="rememberKey" type="checkbox" /> 本标签页内记住</label>
+      <p class="hint">
+        密钥只保存在本页 <code>sessionStorage</code>，直接发给
+        <code>api.deepseek.com</code>，<b>不经过任何第三方服务器</b>，也不写入仓库。
+      </p>
+      <button id="analyzeBtn" class="btn primary">用我的 Key 分析本案例</button>
+      <p class="hint warn">
+        浏览器里只能做<b>候选发现</b>；真正的判定需要 Docker 沙箱执行 ——
+        下方「已落盘证据」才是判定结果。
+      </p>
+      <div id="analyzeStatus" class="status" hidden></div>
+    </div>
+  </aside>
+
+  <section class="content">
+    <div id="caseHeader"></div>
+    <div id="summaryCards" class="cards"></div>
+    <div id="analyzeResult" class="analyze-result" hidden></div>
+    <div id="findings"></div>
+    <footer class="foot">
+      <span id="genAt"></span>
+      <span class="dot">·</span>
+      <a href="https://github.com/Oyama-Mahiro-F/llm-python-code-audit" target="_blank" rel="noopener">源码与实验记录</a>
+    </footer>
+  </section>
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>
