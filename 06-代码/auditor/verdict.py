@@ -7,7 +7,7 @@
       LLM 仅负责对证据做推理分类;输出经结构化校验与确定性护栏约束。
 
 结果三分类(方案 4.4 / 任务书 3.3):
-  TP           payload 到达 sink 且构成漏洞
+  TP           payload 到达危险操作点(sink)且构成漏洞
   FP           证据表明不构成漏洞(如参数化查询已拦截)
   Unconfirmed  环境问题 / harness 失败 / payload 未触发(不计入误报)
 
@@ -68,7 +68,7 @@ def judge_mode_a(alert: dict, payload: str, run: dict) -> dict:
     if result.get("error"):
         # 业务代码抛错:可能 payload 构造不当或环境差异 → 不武断判 FP
         return {"verdict": "Unconfirmed",
-                "reason": f"payload 执行抛错({result['error']}),未能到达 sink;不等同于漏洞不存在",
+                "reason": f"payload 执行抛错({result['error']}),未能到达危险操作点;不等同于漏洞不存在",
                 "mode": "A", "fix_suggestion": "改 payload", "confirmed_by": "execution"}
 
     captured = result.get("captured") or {}
@@ -84,7 +84,7 @@ def judge_mode_a(alert: dict, payload: str, run: dict) -> dict:
     if reached and not sanitized:
         return {
             "verdict": "TP",
-            "reason": (f"payload 已到达 sink(共 {len(calls)} 次调用被拦截),"
+            "reason": (f"payload 已到达危险操作点(共 {len(calls)} 次调用被拦截),"
                        "且未净化——污点数据未处理即进入危险操作,漏洞成立"),
             "mode": "A", "fix_suggestion": None,
             "confirmed_by": "execution",
@@ -92,11 +92,11 @@ def judge_mode_a(alert: dict, payload: str, run: dict) -> dict:
         }
     if reached and sanitized:
         return {"verdict": "FP",
-                "reason": "payload 到达 sink,但调用方式已净化(参数化/绑定),不构成漏洞",
+                "reason": "payload 到达危险操作点,但调用方式已净化(参数化/绑定),不构成漏洞",
                 "mode": "A", "fix_suggestion": None, "confirmed_by": "execution",
                 "sink_calls": len(calls)}
     return {"verdict": "Unconfirmed",
-            "reason": "payload 未能触发 sink 调用;可能构造不当,不等同于漏洞不存在",
+            "reason": "payload 未能触发危险操作点调用;可能构造不当,不等同于漏洞不存在",
             "mode": "A", "fix_suggestion": "改 payload", "confirmed_by": "execution",
             "sink_calls": len(calls)}
 
@@ -107,8 +107,8 @@ MODE_B_PROMPT = """你是代码安全审计的质量控制员。一次沙箱动�
 你的任务是对这次运行做**归因分类**,不是重新找漏洞。
 
 判定口径(由项目方定义,必须严格遵守):
-- TP:payload 确实到达了被拦截的危险 sink,且运行证据表明构成漏洞;
-- FP:payload 到达了 sink,但运行证据表明不构成漏洞(如参数化绑定、校验生效);
+- TP:payload 确实到达了被拦截的危险操作点(sink),且运行证据表明构成漏洞;
+- FP:payload 到达了危险操作点,但运行证据表明不构成漏洞(如参数化绑定、校验生效);
 - Unconfirmed:验证未得出确定结论。失败只分两类:
   ① mock/harness 环境错误(桩写错、依赖缺失、语法错误);
   ② payload 未能触发(payload 构造不当)。

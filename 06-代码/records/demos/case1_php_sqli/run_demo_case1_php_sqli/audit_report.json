@@ -1,7 +1,7 @@
 {
   "summary": {
     "run_id": "demo_case1_php_sqli",
-    "generated_at": "2026-11-25T20:05:05.308788+00:00",
+    "generated_at": "2026-11-26T06:00:53.616919+00:00",
     "total": 1,
     "counts": {
       "TP": 1,
@@ -95,7 +95,7 @@
       },
       "verdict": {
         "verdict": "TP",
-        "reason": "payload 已到达 sink(共 1 次调用被拦截),且未净化——污点数据未处理即进入危险操作,漏洞成立",
+        "reason": "payload 已到达危险操作点(共 1 次调用被拦截),且未净化——污点数据未处理即进入危险操作,漏洞成立",
         "mode": "A",
         "fix_suggestion": null,
         "confirmed_by": "execution",
@@ -172,7 +172,7 @@
           "pattern": "外部输入经字符串拼接进入 SQL 查询,未使用预处理语句/参数绑定",
           "nvd_url": "https://nvd.nist.gov/vuln/detail/CVE-2019-15573"
         },
-        "text": "PHP SQL 注入(CWE-89):user_login.php:15,所属函数 login_check()。污点源:函数参数 $user(外部可控输入)(候选来自LLM 候选发现通道)。传播:第 14 行 `$sql = \"SELECT id, name FROM users WHERE name = '\" . $user . \"'\";`,外部输入未经净化即拼接进危险调用的参数。sink:第 15 行 `$res = mysqli_query($conn, $sql);`,危险 API 为 mysqli_query。沙箱截获的实际实参:`SELECT id, name FROM users WHERE name = 'zxq-demo-marker' OR '1'='1'`,payload `zxq-demo-marker' OR '1'='1` 已到达 sink。payload 原样出现在 mysqli_query 的实参中且未见净化处理(无 sanitized 标记、无参数绑定),污点路径被执行证实 → 已确认(TP)。CVE 参照:CVE-2019-15573(Gesior-AAC 的 tankyou.php 存在 SQL 注入:用户可控输入未加处理即拼入 SQL 语句;CWE-89,CVSS 9.8 CRITICAL;NVD 链接见下方)"
+        "text": "PHP SQL 注入(CWE-89):user_login.php:15,所属函数 login_check()。污点源:函数参数 $user(外部可控输入)(候选来自LLM 候选发现通道)。传播:第 14 行 `$sql = \"SELECT id, name FROM users WHERE name = '\" . $user . \"'\";`,外部输入未经净化即拼接进危险调用的参数。危险操作点:第 15 行 `$res = mysqli_query($conn, $sql);`,执行危险调用 mysqli_query。沙箱截获的实际实参:`SELECT id, name FROM users WHERE name = 'zxq-demo-marker' OR '1'='1'`,payload `zxq-demo-marker' OR '1'='1` 已到达危险操作点。payload 原样出现在 mysqli_query 的实参中且未见净化处理(无 sanitized 标记、无参数绑定),污点路径被执行证实 → 已确认(TP)。CVE 参照:CVE-2019-15573(Gesior-AAC 的 tankyou.php 存在 SQL 注入:用户可控输入未加处理即拼入 SQL 语句;CWE-89,CVSS 9.8 CRITICAL;NVD 链接见下方)"
       }
     }
   ]

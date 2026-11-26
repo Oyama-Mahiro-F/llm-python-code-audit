@@ -1,0 +1,374 @@
+[
+  {
+    "alert_id": "A-001",
+    "cwe": "CWE-89",
+    "source_alert": {
+      "alert_id": "A-001",
+      "check_id": "python.lang.security.audit.formatted-sql-query.formatted-sql-query",
+      "path": "/src/vuln_cwe89_user_dao.py",
+      "line": 20,
+      "end_line": 20,
+      "message": "Detected possible formatted SQL query. Use parameterized queries instead."
+    },
+    "static_understanding": {
+      "status": "llm_pending",
+      "note": "逐告警静态理解未接入;候选发现已由 llm_discover 覆盖"
+    },
+    "extract": {
+      "ok": true,
+      "language": "python",
+      "file": "D:\\university_learning\\4.1\\信息安全工程概论\\06-代码\\samples\\vuln_cwe89_user_dao.py",
+      "sink_line": 20,
+      "sink_function": "get_user",
+      "module_constants": [
+        "DB_PATH = \"app.db\""
+      ],
+      "functions": [
+        {
+          "name": "open_db",
+          "start_line": 11,
+          "end_line": 13,
+          "is_sink": false
+        },
+        {
+          "name": "get_user",
+          "start_line": 16,
+          "end_line": 21,
+          "is_sink": true
+        }
+      ],
+      "direct_calls": [
+        "open_db"
+      ],
+      "unresolved_calls": [],
+      "cross_file_missing": false,
+      "snippet_path": "records/demos/samples/run_ui_samples/A-001/snippet.py",
+      "snippet_file": "snippet.py",
+      "constants_note": null
+    },
+    "harness": {
+      "assemble_ok": true,
+      "assemble_error": null,
+      "language": "python",
+      "harness_file": "harness.py",
+      "harness_path": "D:/university_learning/4.1/信息安全工程概论/06-代码/records/demos/samples/run_ui_samples/A-001/harness.py",
+      "harness_sha": "46b3a544b72fcacc",
+      "payload_sha": "f3fa044f9911dec8",
+      "redirects_applied": [],
+      "param_convention": "被测函数第一个形参接收外部输入;harness 以 payload 作为第一个实参调用"
+    },
+    "run": null,
+    "verdict": null,
+    "retries": [],
+    "pending_attempt": null,
+    "overhead": {
+      "llm_calls": 0,
+      "sandbox_runs": 1,
+      "wall_time_s": null
+    },
+    "evidence": null,
+    "mock": {
+      "generated_by": "template",
+      "template": "py:sqlite3.Cursor.execute",
+      "mock_file": "mock_patch.py",
+      "sink_api": "sqlite3.Cursor.execute",
+      "language": "python"
+    }
+  },
+  {
+    "alert_id": "A-002",
+    "cwe": "CWE-89",
+    "source_alert": {
+      "alert_id": "A-002",
+      "check_id": "python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query",
+      "path": "/src/vuln_cwe89_user_dao.py",
+      "line": 20,
+      "end_line": 20,
+      "message": "Avoiding SQL string concatenation: untrusted input concatenated with raw SQL query can result in SQL Injection. In order to execute raw query safely, prepared statement should be used. SQLAlchemy provides TextualSQL to easily used prepared statement with named parameters. For complex SQL composition, use SQL Expression Language or Schema Definition Language. In most cases, SQLAlchemy ORM will be a better option."
+    },
+    "static_understanding": {
+      "status": "llm_pending",
+      "note": "逐告警静态理解未接入;候选发现已由 llm_discover 覆盖"
+    },
+    "extract": {
+      "ok": true,
+      "language": "python",
+      "file": "D:\\university_learning\\4.1\\信息安全工程概论\\06-代码\\samples\\vuln_cwe89_user_dao.py",
+      "sink_line": 20,
+      "sink_function": "get_user",
+      "module_constants": [
+        "DB_PATH = \"app.db\""
+      ],
+      "functions": [
+        {
+          "name": "open_db",
+          "start_line": 11,
+          "end_line": 13,
+          "is_sink": false
+        },
+        {
+          "name": "get_user",
+          "start_line": 16,
+          "end_line": 21,
+          "is_sink": true
+        }
+      ],
+      "direct_calls": [
+        "open_db"
+      ],
+      "unresolved_calls": [],
+      "cross_file_missing": false,
+      "snippet_path": "records/demos/samples/run_ui_samples/A-002/snippet.py",
+      "snippet_file": "snippet.py",
+      "constants_note": null
+    },
+    "harness": {
+      "assemble_ok": true,
+      "assemble_error": null,
+      "language": "python",
+      "harness_file": "harness.py",
+      "harness_path": "D:/university_learning/4.1/信息安全工程概论/06-代码/records/demos/samples/run_ui_samples/A-002/harness.py",
+      "harness_sha": "367e11342afd1bd2",
+      "payload_sha": "f3fa044f9911dec8",
+      "redirects_applied": [],
+      "param_convention": "被测函数第一个形参接收外部输入;harness 以 payload 作为第一个实参调用"
+    },
+    "run": null,
+    "verdict": null,
+    "retries": [],
+    "pending_attempt": null,
+    "overhead": {
+      "llm_calls": 0,
+      "sandbox_runs": 1,
+      "wall_time_s": null
+    },
+    "evidence": null,
+    "mock": {
+      "generated_by": "template",
+      "template": "py:sqlite3.Cursor.execute",
+      "mock_file": "mock_patch.py",
+      "sink_api": "sqlite3.Cursor.execute",
+      "language": "python"
+    }
+  },
+  {
+    "alert_id": "L-001",
+    "cwe": "CWE-22",
+    "source_alert": {
+      "alert_id": "L-001",
+      "check_id": "llm.discover.cwe22",
+      "path": "vuln_cwe22_path.py",
+      "line": 6,
+      "end_line": 6,
+      "message": "LLM 候选(未经动态验证):user_path 被直接拼接到路径前缀后传入 open，未做规范化或校验，可通过 ../ 进行路径穿越读取任意文件。",
+      "metavars": {
+        "source": "user_path 参数（外部可控输入）",
+        "sink": "open",
+        "function": "read_file",
+        "confidence_llm_self_report": 0.95,
+        "note": "置信度为 LLM 自述,不参与判定"
+      }
+    },
+    "static_understanding": {
+      "status": "llm_pending",
+      "note": "逐告警静态理解未接入;候选发现已由 llm_discover 覆盖"
+    },
+    "extract": {
+      "ok": true,
+      "language": "python",
+      "file": "D:\\university_learning\\4.1\\信息安全工程概论\\06-代码\\samples\\vuln_cwe22_path.py",
+      "sink_line": 6,
+      "sink_function": "read_file",
+      "module_constants": [],
+      "functions": [
+        {
+          "name": "read_file",
+          "start_line": 4,
+          "end_line": 7,
+          "is_sink": true
+        }
+      ],
+      "direct_calls": [
+        "open"
+      ],
+      "unresolved_calls": [],
+      "cross_file_missing": false,
+      "snippet_path": "records/demos/samples/run_ui_samples/L-001/snippet.py",
+      "snippet_file": "snippet.py",
+      "constants_note": null
+    },
+    "harness": {
+      "assemble_ok": true,
+      "assemble_error": null,
+      "language": "python",
+      "harness_file": "harness.py",
+      "harness_path": "D:/university_learning/4.1/信息安全工程概论/06-代码/records/demos/samples/run_ui_samples/L-001/harness.py",
+      "harness_sha": "ae8e30006f0b6b07",
+      "payload_sha": "3754d6cb3a38e118",
+      "redirects_applied": [],
+      "param_convention": "被测函数第一个形参接收外部输入;harness 以 payload 作为第一个实参调用"
+    },
+    "run": null,
+    "verdict": null,
+    "retries": [],
+    "pending_attempt": null,
+    "overhead": {
+      "llm_calls": 0,
+      "sandbox_runs": 1,
+      "wall_time_s": null
+    },
+    "evidence": null,
+    "mock": {
+      "generated_by": "template",
+      "template": "py:builtins.open",
+      "mock_file": "mock_patch.py",
+      "sink_api": "builtins.open",
+      "language": "python"
+    }
+  },
+  {
+    "alert_id": "L-002",
+    "cwe": "CWE-78",
+    "source_alert": {
+      "alert_id": "L-002",
+      "check_id": "llm.discover.cwe78",
+      "path": "vuln_cwe78_cmd.py",
+      "line": 7,
+      "end_line": 7,
+      "message": "LLM 候选(未经动态验证):user_cmd 未经净化直接拼接进 shell 命令并传给 os.system，可注入任意命令",
+      "metavars": {
+        "source": "user_cmd 参数（外部可控输入）",
+        "sink": "os.system",
+        "function": "run_command",
+        "confidence_llm_self_report": 0.98,
+        "note": "置信度为 LLM 自述,不参与判定"
+      }
+    },
+    "static_understanding": {
+      "status": "llm_pending",
+      "note": "逐告警静态理解未接入;候选发现已由 llm_discover 覆盖"
+    },
+    "extract": {
+      "ok": true,
+      "language": "python",
+      "file": "D:\\university_learning\\4.1\\信息安全工程概论\\06-代码\\samples\\vuln_cwe78_cmd.py",
+      "sink_line": 7,
+      "sink_function": "run_command",
+      "module_constants": [],
+      "functions": [
+        {
+          "name": "run_command",
+          "start_line": 5,
+          "end_line": 8,
+          "is_sink": true
+        }
+      ],
+      "direct_calls": [],
+      "unresolved_calls": [],
+      "cross_file_missing": false,
+      "snippet_path": "records/demos/samples/run_ui_samples/L-002/snippet.py",
+      "snippet_file": "snippet.py",
+      "constants_note": null
+    },
+    "harness": {
+      "assemble_ok": false,
+      "assemble_error": "mock_failed:no_template_for:python/CWE-78"
+    },
+    "run": null,
+    "verdict": null,
+    "retries": [],
+    "pending_attempt": null,
+    "overhead": {
+      "llm_calls": 0,
+      "sandbox_runs": 1,
+      "wall_time_s": null
+    },
+    "evidence": null,
+    "mock": {
+      "error": "no_template_for:python/CWE-78"
+    }
+  },
+  {
+    "alert_id": "L-003",
+    "cwe": "CWE-89",
+    "source_alert": {
+      "alert_id": "L-003",
+      "check_id": "llm.discover.cwe89",
+      "path": "vuln_cwe89_user_dao.py",
+      "line": 19,
+      "end_line": 19,
+      "message": "LLM 候选(未经动态验证):username 被直接拼接进 SQL 查询字符串并传给 execute，导致 SQL 注入。",
+      "metavars": {
+        "source": "函数参数 username",
+        "sink": "cursor.execute",
+        "function": "get_user",
+        "confidence_llm_self_report": 0.98,
+        "note": "置信度为 LLM 自述,不参与判定"
+      }
+    },
+    "static_understanding": {
+      "status": "llm_pending",
+      "note": "逐告警静态理解未接入;候选发现已由 llm_discover 覆盖"
+    },
+    "extract": {
+      "ok": true,
+      "language": "python",
+      "file": "D:\\university_learning\\4.1\\信息安全工程概论\\06-代码\\samples\\vuln_cwe89_user_dao.py",
+      "sink_line": 19,
+      "sink_function": "get_user",
+      "module_constants": [
+        "DB_PATH = \"app.db\""
+      ],
+      "functions": [
+        {
+          "name": "open_db",
+          "start_line": 11,
+          "end_line": 13,
+          "is_sink": false
+        },
+        {
+          "name": "get_user",
+          "start_line": 16,
+          "end_line": 21,
+          "is_sink": true
+        }
+      ],
+      "direct_calls": [
+        "open_db"
+      ],
+      "unresolved_calls": [],
+      "cross_file_missing": false,
+      "snippet_path": "records/demos/samples/run_ui_samples/L-003/snippet.py",
+      "snippet_file": "snippet.py",
+      "constants_note": null
+    },
+    "harness": {
+      "assemble_ok": true,
+      "assemble_error": null,
+      "language": "python",
+      "harness_file": "harness.py",
+      "harness_path": "D:/university_learning/4.1/信息安全工程概论/06-代码/records/demos/samples/run_ui_samples/L-003/harness.py",
+      "harness_sha": "82515098e0193964",
+      "payload_sha": "f3fa044f9911dec8",
+      "redirects_applied": [],
+      "param_convention": "被测函数第一个形参接收外部输入;harness 以 payload 作为第一个实参调用"
+    },
+    "run": null,
+    "verdict": null,
+    "retries": [],
+    "pending_attempt": null,
+    "overhead": {
+      "llm_calls": 0,
+      "sandbox_runs": 1,
+      "wall_time_s": null
+    },
+    "evidence": null,
+    "mock": {
+      "generated_by": "template",
+      "template": "py:sqlite3.Cursor.execute",
+      "mock_file": "mock_patch.py",
+      "sink_api": "sqlite3.Cursor.execute",
+      "language": "python"
+    }
+  }
+]

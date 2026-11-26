@@ -78,7 +78,7 @@
     },
     "verdict": {
       "verdict": "TP",
-      "reason": "payload 已到达 sink(共 1 次调用被拦截),且未净化——污点数据未处理即进入危险操作,漏洞成立",
+      "reason": "payload 已到达危险操作点(共 1 次调用被拦截),且未净化——污点数据未处理即进入危险操作,漏洞成立",
       "mode": "A",
       "fix_suggestion": null,
       "confirmed_by": "execution",
@@ -155,7 +155,7 @@
         "pattern": "归档内路径未规范化即用于文件写入",
         "nvd_url": "https://nvd.nist.gov/vuln/detail/CVE-2007-4559"
       },
-      "text": "Python 路径穿越(CWE-22):report_reader.py:18,所属函数 read_report()。污点源:report_name 参数（外部可控输入）(候选来自LLM 候选发现通道)。传播:第 17 行 `path = REPORT_DIR + \"/\" + report_name`,外部输入未经净化即拼接进危险调用的参数。sink:第 18 行 `with open(path) as f:`,危险 API 为 builtins.open。沙箱截获的实际实参:`/var/app/reports/../../etc/passwd`,payload `../../etc/passwd` 已到达 sink。payload 原样出现在 builtins.open 的实参中且未见净化处理(无 sanitized 标记、无参数绑定),污点路径被执行证实 → 已确认(TP)。CVE 参照:CVE-2007-4559(Python tarfile 模块的 extract/extractall 存在目录穿越,可覆盖任意文件;CWE-22;NVD 链接见下方)"
+      "text": "Python 路径穿越(CWE-22):report_reader.py:18,所属函数 read_report()。污点源:report_name 参数（外部可控输入）(候选来自LLM 候选发现通道)。传播:第 17 行 `path = REPORT_DIR + \"/\" + report_name`,外部输入未经净化即拼接进危险调用的参数。危险操作点:第 18 行 `with open(path) as f:`,执行危险调用 builtins.open。沙箱截获的实际实参:`/var/app/reports/../../etc/passwd`,payload `../../etc/passwd` 已到达危险操作点。payload 原样出现在 builtins.open 的实参中且未见净化处理(无 sanitized 标记、无参数绑定),污点路径被执行证实 → 已确认(TP)。CVE 参照:CVE-2007-4559(Python tarfile 模块的 extract/extractall 存在目录穿越,可覆盖任意文件;CWE-22;NVD 链接见下方)"
     }
   }
 ]

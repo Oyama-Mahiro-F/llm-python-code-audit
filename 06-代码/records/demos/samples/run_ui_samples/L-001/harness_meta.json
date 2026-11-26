@@ -1,0 +1,11 @@
+{
+  "assemble_ok": true,
+  "assemble_error": null,
+  "language": "python",
+  "harness_file": "harness.py",
+  "harness_path": "D:/university_learning/4.1/信息安全工程概论/06-代码/records/demos/samples/run_ui_samples/L-001/harness.py",
+  "harness_sha": "ae8e30006f0b6b07",
+  "payload_sha": "3754d6cb3a38e118",
+  "redirects_applied": [],
+  "param_convention": "被测函数第一个形参接收外部输入;harness 以 payload 作为第一个实参调用"
+}

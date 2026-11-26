@@ -7,7 +7,7 @@
   位置    文件:行 + 所属函数
   污点源  外部输入以哪个形参进入被测函数(取自函数签名 + 告警来源)
   传播    引用原始代码中的实际拼接行(带行号)
-  sink    实际被拦截的危险 API + 调用行
+  危险操作点 实际被拦截的危险 API + 调用行(sink,污点汇聚处)
   截获值  沙箱内 mock 记录到的真实实参(这是"跑出来了"的硬证据)
   payload 本次注入的标记串
   依据    为什么判 TP/FP/Unconfirmed(与三分类口径一致)
@@ -173,11 +173,11 @@ def build(state: dict, snippet: str, mock_code: str,
         parts.append(f"传播:第 {taint_line} 行 `{line_text(taint_line)}`,"
                      "外部输入未经净化即拼接进危险调用的参数。")
     if sink_call_line:
-        parts.append(f"sink:第 {sink_call_line} 行 `{line_text(sink_call_line)}`,"
-                     f"危险 API 为 {sink_api}。")
+        parts.append(f"危险操作点:第 {sink_call_line} 行 `{line_text(sink_call_line)}`,"
+                     f"执行危险调用 {sink_api}。")
     if captured_arg:
         parts.append(f"沙箱截获的实际实参:`{captured_arg}`,payload "
-                     f"`{captured.get('payload', '')}` 已到达 sink。")
+                     f"`{captured.get('payload', '')}` 已到达危险操作点。")
     parts.append(basis + "。")
     if cve:
         parts.append(f"CVE 参照:{cve['cve_id']}({cve.get('summary_zh', '')};"

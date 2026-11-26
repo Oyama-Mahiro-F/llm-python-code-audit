@@ -1,0 +1,24 @@
+{
+  "ok": true,
+  "language": "php",
+  "file": "D:\\university_learning\\4.1\\信息安全工程概论\\06-代码\\demos\\case2_php_cmd\\ping.php",
+  "sink_line": 14,
+  "sink_function": "ping_host",
+  "module_constants": [],
+  "functions": [
+    {
+      "name": "ping_host",
+      "start_line": 11,
+      "end_line": 16,
+      "is_sink": true
+    }
+  ],
+  "direct_calls": [
+    "shell_exec"
+  ],
+  "unresolved_calls": [],
+  "cross_file_missing": false,
+  "snippet_path": "records/demos/case2_php_cmd/run_ui_case2_php_cmd/A-001/snippet.php",
+  "snippet_file": "snippet.php",
+  "constants_note": "PHP 顶层赋值暂不提取"
+}

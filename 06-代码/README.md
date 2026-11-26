@@ -277,7 +277,7 @@ attempt 目录被清理,retry_trace 首行为其残留;修复措施:录制目录
 | 位置 | 告警 + Extract | `user_login.php:15`,函数 `login_check()` |
 | 污点源 | 告警 metavars / 函数签名 | `$user` 形参(候选来自 LLM 通道) |
 | 传播 | 函数体内含形参的实际代码行 | 第 14 行 `$sql = "... '" . $user . "'";` |
-| sink | CAPTURED.sink_api | `mysqli_query` @ 第 15 行 |
+| 危险操作点(sink) | CAPTURED.sink_api | `mysqli_query` @ 第 15 行 |
 | 截获实参 | 沙箱 stdout 的 `@@RESULT@@` | `SELECT ... 'zxq-demo-marker' OR '1'='1'` |
 | 依据 | 三分类口径 + 是否净化 | 未参数化 → 已确认(TP) |
 | CVE | `cve_refs.json` 按 CWE+语言匹配 | CVE-2019-15573(CVSS 9.8) |

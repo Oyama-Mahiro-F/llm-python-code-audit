@@ -1,0 +1,4 @@
+{
+  "assemble_ok": false,
+  "assemble_error": "mock_failed:no_template_for:python/CWE-78"
+}

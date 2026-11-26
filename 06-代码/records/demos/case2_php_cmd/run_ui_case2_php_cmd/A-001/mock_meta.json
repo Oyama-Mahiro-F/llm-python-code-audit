@@ -1,0 +1,22 @@
+{
+  "ok": true,
+  "template": "php:shell_exec",
+  "generated_by": "template",
+  "language": "php",
+  "llm_backend": null,
+  "llm_calls": 0,
+  "payload": "127.0.0.1; echo zxq-demo-marker",
+  "imports": [],
+  "sink_function": "ping_host",
+  "sink_api": "shell_exec",
+  "redirect": [
+    "shell_exec",
+    "exec",
+    "system",
+    "passthru"
+  ],
+  "mock_code": "// --- mock 桩(模板生成,记录 shell 命令串,不执行任何命令)---\n$GLOBALS['CAPTURED'] = ['sink_api' => 'shell_exec', 'calls' => []];\n\nfunction __mock_shell_exec($cmd)\n{\n    $GLOBALS['CAPTURED']['calls'][] = [\n        'args' => is_string($cmd) ? $cmd : var_export($cmd, true),\n    ];\n    return '';\n}\n\nfunction __mock_exec($cmd, &$output = null, &$code = null)\n{\n    $output = [];\n    $code = 0;\n    $GLOBALS['CAPTURED']['calls'][] = [\n        'args' => is_string($cmd) ? $cmd : var_export($cmd, true),\n    ];\n    return '';\n}\n\nfunction __mock_system($cmd, &$code = null)\n{\n    $code = 0;\n    $GLOBALS['CAPTURED']['calls'][] = [\n        'args' => is_string($cmd) ? $cmd : var_export($cmd, true),\n    ];\n    return '';\n}\n\nfunction __mock_passthru($cmd, &$code = null)\n{\n    $code = 0;\n    $GLOBALS['CAPTURED']['calls'][] = [\n        'args' => is_string($cmd) ? $cmd : var_export($cmd, true),\n    ];\n    return '';\n}\n",
+  "mock_path": "records/demos/case2_php_cmd/run_ui_case2_php_cmd/A-001/mock_patch.php",
+  "mock_file": "mock_patch.php",
+  "payload_path": "records/demos/case2_php_cmd/run_ui_case2_php_cmd/A-001/payload.txt"
+}

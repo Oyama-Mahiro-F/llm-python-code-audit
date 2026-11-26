@@ -1,7 +1,7 @@
 {
   "summary": {
     "run_id": "demo_case2_php_cmd",
-    "generated_at": "2026-11-25T20:05:05.949089+00:00",
+    "generated_at": "2026-11-26T06:00:54.091624+00:00",
     "total": 1,
     "counts": {
       "TP": 1,
@@ -100,7 +100,7 @@
       },
       "verdict": {
         "verdict": "TP",
-        "reason": "payload 已到达 sink(共 1 次调用被拦截),且未净化——污点数据未处理即进入危险操作,漏洞成立",
+        "reason": "payload 已到达危险操作点(共 1 次调用被拦截),且未净化——污点数据未处理即进入危险操作,漏洞成立",
         "mode": "A",
         "fix_suggestion": null,
         "confirmed_by": "execution",
@@ -177,7 +177,7 @@
           "pattern": "用户输入进入 PHP 侧 shell 执行路径,未过滤 shell 元字符",
           "nvd_url": "https://nvd.nist.gov/vuln/detail/CVE-2019-9194"
         },
-        "text": "PHP OS 命令注入(CWE-78):ping.php:14,所属函数 ping_host()。污点源:$host 形参(候选来自SAST 规则扫描)。传播:第 13 行 `$cmd = \"ping -c 1 \" . $host;`,外部输入未经净化即拼接进危险调用的参数。sink:第 14 行 `$output = shell_exec($cmd);`,危险 API 为 shell_exec。沙箱截获的实际实参:`ping -c 1 127.0.0.1; echo zxq-demo-marker`,payload `127.0.0.1; echo zxq-demo-marker` 已到达 sink。payload 原样出现在 shell_exec 的实参中且未见净化处理(无 sanitized 标记、无参数绑定),污点路径被执行证实 → 已确认(TP)。CVE 参照:CVE-2019-9194(elFinder < 2.1.48 的 PHP connector 存在命令注入;CWE-78;NVD 链接见下方)"
+        "text": "PHP OS 命令注入(CWE-78):ping.php:14,所属函数 ping_host()。污点源:$host 形参(候选来自SAST 规则扫描)。传播:第 13 行 `$cmd = \"ping -c 1 \" . $host;`,外部输入未经净化即拼接进危险调用的参数。危险操作点:第 14 行 `$output = shell_exec($cmd);`,执行危险调用 shell_exec。沙箱截获的实际实参:`ping -c 1 127.0.0.1; echo zxq-demo-marker`,payload `127.0.0.1; echo zxq-demo-marker` 已到达危险操作点。payload 原样出现在 shell_exec 的实参中且未见净化处理(无 sanitized 标记、无参数绑定),污点路径被执行证实 → 已确认(TP)。CVE 参照:CVE-2019-9194(elFinder < 2.1.48 的 PHP connector 存在命令注入;CWE-78;NVD 链接见下方)"
       }
     }
   ]

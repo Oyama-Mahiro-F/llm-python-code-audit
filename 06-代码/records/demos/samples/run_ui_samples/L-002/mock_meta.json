@@ -1,0 +1,6 @@
+{
+  "ok": false,
+  "error": "no_template_for:python/CWE-78",
+  "llm_backend": null,
+  "llm_calls": 0
+}

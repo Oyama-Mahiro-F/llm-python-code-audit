@@ -1,0 +1,17 @@
+{
+  "ok": true,
+  "template": "py:builtins.open",
+  "generated_by": "template",
+  "language": "python",
+  "llm_backend": null,
+  "llm_calls": 0,
+  "payload": "../../etc/passwd",
+  "imports": [],
+  "sink_function": "read_report",
+  "sink_api": "builtins.open",
+  "redirect": [],
+  "mock_code": "# --- mock 桩(模板生成,拦截内置 open 文件读取)---\nimport json as _json\n\nCAPTURED = {\"sink_api\": \"builtins.open\", \"calls\": []}\n\n\nclass _FakeFile:\n    def __init__(self, path):\n        self._path = path\n\n    def read(self):\n        return \"MOCK_CONTENT:\" + str(self._path)\n\n    def __enter__(self):\n        return self\n\n    def __exit__(self, *a):\n        return False\n\n    def close(self):\n        pass\n\n\ndef _fake_open(file=None, *args, **kwargs):\n    CAPTURED[\"calls\"].append({\"args\": str(file)})\n    return _FakeFile(file)\n\n\ndef _install_mock():\n    import builtins\n    builtins.open = _fake_open\n",
+  "mock_path": "records/demos/case3_python_path/run_ui_case3_python_path/L-001/mock_patch.py",
+  "mock_file": "mock_patch.py",
+  "payload_path": "records/demos/case3_python_path/run_ui_case3_python_path/L-001/payload.txt"
+}

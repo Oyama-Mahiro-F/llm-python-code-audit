@@ -18,6 +18,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -63,16 +64,27 @@ DEMOS = {
 BADGE = {"TP": "✅ 已确认 TP", "FP": "❌ 已排除 FP", "Unconfirmed": "⚠️ 未确认"}
 
 
-def run_cmd(args: list[str]) -> tuple[int, str]:
+def run_cmd(args: list[str], env: dict | None = None) -> tuple[int, str]:
     proc = subprocess.run(args, cwd=str(ROOT), capture_output=True,
-                          text=True, encoding="utf-8", errors="replace")
+                          text=True, encoding="utf-8", errors="replace",
+                          env=env)
     return proc.returncode, (proc.stdout or "") + (proc.stderr or "")
 
 
-def run_pipeline(demo: dict, mock_backend: str) -> tuple[bool, str]:
+def _child_env(api_key: str | None) -> dict:
+    """构造子进程环境:密钥只注入环境变量,不写任何文件。"""
+    env = os.environ.copy()
+    if api_key:
+        env["DEEPSEEK_API_KEY"] = api_key
+    return env
+
+
+def run_pipeline(demo: dict, mock_backend: str,
+                 api_key: str | None = None) -> tuple[bool, str]:
     run_id = "ui_" + Path(demo["project"]).name
     alerts = demo["alerts"].split()
     logs = []
+    env = _child_env(api_key)
     code, out = run_cmd([PY, "-m", "auditor.orchestrator", "prepare",
                          "--alerts", *alerts, "--project", demo["project"],
                          "--run-id", run_id, "--out",
@@ -106,6 +118,24 @@ def run_pipeline(demo: dict, mock_backend: str) -> tuple[bool, str]:
                          f"records/demos/{Path(demo['project']).name}"])
     logs.append(f"[collect] exit={code}\n{out[-1200:]}")
     return code == 0, "\n".join(logs)
+
+
+def missing_key_error(log: str) -> bool:
+    """流水线是否因缺少 DeepSeek 密钥而失败(而非容器/代码问题)。"""
+    return "DEEPSEEK_API_KEY" in log
+
+
+@st.cache_data(show_spinner=False)
+def docker_available() -> bool:
+    """探测本界面进程能否访问 Docker(受限宿主会返回 False)。"""
+    try:
+        proc = subprocess.run(
+            ["docker", "version", "--format", "{{.Server.Version}}"],
+            capture_output=True, text=True, encoding="utf-8",
+            errors="replace", timeout=20)
+        return proc.returncode == 0
+    except (OSError, subprocess.SubprocessError):
+        return False
 
 
 def load_report(project: str, run_id: str | None = None) -> dict | None:
@@ -152,8 +182,8 @@ def render_finding(f: dict) -> None:
     rows = [
         ("① 污点源", nar.get("source", {}).get("desc", "-")),
         ("② 传播", (nar.get("propagation") or {}).get("code") or "-"),
-        ("③ sink", f"{nar.get('sink', {}).get('api', '-')}  "
-                    f"@ 第 {(nar.get('sink') or {}).get('line', '-')} 行"),
+        ("③ 危险操作点", f"{nar.get('sink', {}).get('api', '-')}  "
+                        f"@ 第 {(nar.get('sink') or {}).get('line', '-')} 行"),
         ("④ 沙箱截获实参", nar.get("captured_arg") or "(未截获)"),
         ("⑤ payload", nar.get("payload") or "-"),
     ]
@@ -188,7 +218,7 @@ def render_finding(f: dict) -> None:
                 language="php" if harness_file.endswith(".php") else "python")
         applied = (f.get("harness") or {}).get("redirects_applied") or []
         if applied:
-            st.caption("接缝重定向(把 sink 调用改到 __mock_*):"
+            st.caption("接缝重定向(把危险调用改到 __mock_*):"
                        + ", ".join(f"{a['name']}×{a['count']}" for a in applied))
 
     with st.expander("沙箱运行日志(stdout / stderr / 退出码)"):
@@ -213,14 +243,32 @@ st.title("🛡️ 可验证的大模型代码审计系统")
 st.caption("判定依据不是模型的自述,而是代码在隔离沙箱里**真的跑出来的执行结果** ｜ "
            "每组结论附可执行 harness、payload、环境快照与运行日志")
 
+DOCKER_OK = docker_available()
+if not DOCKER_OK:
+    st.info("ℹ️ **当前会话无法从界面访问 Docker**(宿主策略限制),因此「运行审计」的容器"
+            "步骤会被跳过——下方展示的是**已落盘的历史运行结果**,证据完整、可复现。"
+            "需要完整跑一遍时,请在标准终端(WSL2 / PowerShell)启动本界面。")
+
 with st.sidebar:
     st.header("运行设置")
     demo_key = st.selectbox("选择案例", list(DEMOS.keys()))
     demo = DEMOS[demo_key]
     mock_backend = st.radio("mock 生成方式",
                             ["template", "deepseek"],
+                            index=0,
                             help="template=内置模板(确定性、零 API 成本);"
                                  "deepseek=大模型生成(需环境变量 DEEPSEEK_API_KEY)")
+    api_key = None
+    if mock_backend == "deepseek":
+        api_key = st.text_input(
+            "DeepSeek API Key", type="password", key="ds_key_input",
+            help="仅本次界面会话的内存中使用(写入本进程环境变量后传给子进程),"
+                 "**不写入任何文件**;也可启动前设置环境变量 DEEPSEEK_API_KEY 后留空")
+        if api_key:
+            # 同时写入本进程环境:子进程继承,避免仅靠显式 env 传递的遗漏
+            os.environ["DEEPSEEK_API_KEY"] = api_key
+        elif not os.environ.get("DEEPSEEK_API_KEY"):
+            st.warning("未检测到密钥:请在上面填入,或改用 template(确定性、零成本)")
     st.caption(demo["note"])
     go = st.button("▶ 运行审计", type="primary", use_container_width=True)
     st.divider()
@@ -231,12 +279,18 @@ project = demo["project"]
 ui_run_id = "ui_" + Path(project).name
 if go:
     with st.spinner("正在运行:候选 → 提取 → mock → 沙箱执行 → 判定 …"):
-        ok, log = run_pipeline(demo, mock_backend)
+        ok, log = run_pipeline(demo, mock_backend, api_key)
     if ok:
         st.success("审计完成:全部产物已落盘 records/")
         st.session_state["last_run_id"] = ui_run_id
     else:
-        if "容器步骤未执行" in log:
+        if missing_key_error(log):
+            st.error(
+                "缺少 DeepSeek API Key:本次 **没有产生新判定**,已有结果未受影响。\n"
+                "- 在左侧「DeepSeek API Key」填入密钥后重试(仅内存使用);或\n"
+                "- 把 mock 生成方式切回 **template**(内置模板,确定性、零 API 成本)——"
+                "三个演示案例都支持 template。")
+        elif "容器步骤未执行" in log:
             st.warning(
                 "本次容器步骤被宿主策略拒绝(无法访问 Docker),**没有产生新的判定**。"
                 "可选:① 在标准终端(WSL2 / PowerShell)启动本界面;"

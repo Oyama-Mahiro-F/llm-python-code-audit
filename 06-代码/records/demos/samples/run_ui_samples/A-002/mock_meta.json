@@ -1,0 +1,19 @@
+{
+  "ok": true,
+  "template": "py:sqlite3.Cursor.execute",
+  "generated_by": "template",
+  "language": "python",
+  "llm_backend": null,
+  "llm_calls": 0,
+  "payload": "zxq-demo-marker' OR '1'='1",
+  "imports": [
+    "import sqlite3"
+  ],
+  "sink_function": "get_user",
+  "sink_api": "sqlite3.Cursor.execute",
+  "redirect": [],
+  "mock_code": "# --- mock 桩(模板生成,拦截 sqlite3 危险 sink)---\nimport json as _json\n\nCAPTURED = {\"sink_api\": \"sqlite3.Cursor.execute\", \"calls\": []}\n\n\nclass _FakeCursor:\n    def execute(self, sql=None, params=None):\n        CAPTURED[\"calls\"].append({\n            \"sql\": sql if isinstance(sql, str) else repr(sql),\n            \"params\": None if params is None else repr(params),\n            \"sanitized\": params is not None,\n        })\n        return self\n\n    def fetchone(self):\n        return None\n\n    def fetchall(self):\n        return []\n\n\nclass _FakeConnection:\n    def cursor(self):\n        return _FakeCursor()\n\n\ndef _install_mock():\n    import sqlite3\n    sqlite3.connect = lambda *a, **k: _FakeConnection()\n",
+  "mock_path": "records/demos/samples/run_ui_samples/A-002/mock_patch.py",
+  "mock_file": "mock_patch.py",
+  "payload_path": "records/demos/samples/run_ui_samples/A-002/payload.txt"
+}
