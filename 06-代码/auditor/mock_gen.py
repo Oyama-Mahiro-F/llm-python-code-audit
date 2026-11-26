@@ -42,6 +42,20 @@ _BLOCKLIST_CALLS = [
     r"urlopen\s*\(", r"\bpopen\s*\(",
 ]
 
+# PHP 危险调用黑名单(PHP 函数名大小写不敏感,匹配用 IGNORECASE)。
+# (?<![\w]) 负向前瞻:排除 __mock_shell_exec( 这类桩定义(拦截本身),
+# 只拦 shell_exec( 这种真实调用形态。覆盖命令执行 / 代码执行 / SQL 执行三类。
+_BLOCKLIST_CALLS_PHP = [
+    r"(?<![\w])shell_exec\s*\(", r"(?<![\w])passthru\s*\(",
+    r"(?<![\w])system\s*\(", r"(?<![\w])exec\s*\(",
+    r"(?<![\w])proc_open\s*\(", r"(?<![\w])popen\s*\(",
+    r"(?<![\w])pcntl_exec\s*\(",
+    r"(?<![\w])eval\s*\(", r"(?<![\w])assert\s*\(",
+    r"(?<![\w])create_function\s*\(",
+    r"(?<![\w])mysqli_query\s*\(", r"(?<![\w])mysql_query\s*\(",
+    r"(?<![\w])pg_query\s*\(",
+]
+
 # ---------------------------------------------------------------- 模板(CWE-89 保底)
 _SQLITE_MOCK = '''\
 # --- mock 桩(模板生成,拦截 sqlite3 危险 sink)---
@@ -282,6 +296,12 @@ _EXAMPLE_PHP_SQLI = '''{"redirect": ["mysqli_query"],
  "sink_api": "mysqli_query",
  "rationale": "定义 __mock_mysqli_query 记录 SQL,harness 将 mysqli_query( 重定向到它"}'''
 
+_EXAMPLE_PHP_CMD = '''{"redirect": ["shell_exec"],
+ "mock_code": "$GLOBALS['CAPTURED'] = ['sink_api' => 'shell_exec', 'calls' => []];\\nfunction __mock_shell_exec($cmd) {\\n    $GLOBALS['CAPTURED']['calls'][] = ['args' => is_string($cmd) ? $cmd : var_export($cmd, true)];\\n    return '';\\n}",
+ "payload": "127.0.0.1; echo MARKER",
+ "sink_api": "shell_exec",
+ "rationale": "定义 __mock_shell_exec 记录命令串,harness 将 shell_exec( 重定向到它"}'''
+
 PROMPT_TEMPLATE = """你是安全测试工程师。任务:为一段被提取的 {lang_name} 业务代码编写 mock 桩与触发 payload,
 用于在隔离沙箱中验证一条疑似漏洞告警。这只是一次"带记录的排练":危险操作绝不真实发生。
 
@@ -345,7 +365,8 @@ def _build_prompt(alert: dict, snippet: str, feedback: str | None,
         fb = ("上一轮尝试失败,判定如下,请修正 mock(注意保持 CAPTURED 契约):\n"
               + feedback + "\n")
     if language == "php":
-        examples = "--- 示例:拦截 mysqli_query(PHP)---\n" + _EXAMPLE_PHP_SQLI
+        examples = ("--- 示例 1:拦截 mysqli_query(PHP)---\n" + _EXAMPLE_PHP_SQLI
+                    + "\n--- 示例 2:拦截 shell_exec(PHP)---\n" + _EXAMPLE_PHP_CMD)
         lang_name, fence = "PHP", "php"
     else:
         examples = ("--- 示例 1:拦截 sqlite3 ---\n" + _EXAMPLE_SQLITE
@@ -369,8 +390,12 @@ def _validate(mock_code: str, payload: str, imports: list[str],
         return "mock_code 缺少 CAPTURED"
     if not isinstance(payload, str) or MARKER not in payload:
         return f"payload 未包含标记串 {MARKER}"
-    for pat in _BLOCKLIST_CALLS:
-        if re.search(pat, mock_code):
+    if language == "php":
+        blocklist, flags = _BLOCKLIST_CALLS_PHP, re.IGNORECASE
+    else:
+        blocklist, flags = _BLOCKLIST_CALLS, 0
+    for pat in blocklist:
+        if re.search(pat, mock_code, flags):
             return f"mock_code 含危险调用形态:{pat}"
     if language == "php":
         # PHP:不能本地 compile,做结构性校验(花括号配平 + 桩定义存在)

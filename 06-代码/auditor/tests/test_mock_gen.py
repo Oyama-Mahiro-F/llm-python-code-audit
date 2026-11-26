@@ -128,6 +128,41 @@ class TestMockGenLLM(unittest.TestCase):
                                     bad["imports"])
         self.assertIn("标记串", reason)
 
+    def test_llm_php_shell_exec_generates(self):
+        # PHP LLM 路径:接缝重定向 + 桩定义,经校验通过并落盘 mock_patch.php
+        with tempfile.TemporaryDirectory() as td:
+            run_dir = Path(td) / "run"
+            run_dir.mkdir()
+            (run_dir / "snippet.php").write_text(
+                "function ping_host($host) {\n"
+                "    return shell_exec('ping -c 1 ' . $host);\n"
+                "}\n", encoding="utf-8")
+            php_good = {
+                "redirect": ["shell_exec"],
+                "mock_code": (
+                    "$GLOBALS['CAPTURED'] = ['sink_api' => 'shell_exec', 'calls' => []];\n"
+                    "function __mock_shell_exec($cmd) {\n"
+                    "    $GLOBALS['CAPTURED']['calls'][] = ['args' => "
+                    "is_string($cmd) ? $cmd : var_export($cmd, true)];\n"
+                    "    return '';\n"
+                    "}"),
+                "payload": "127.0.0.1; echo zxq-demo-marker",
+                "sink_api": "shell_exec",
+                "rationale": "拦截 shell_exec",
+            }
+            rf = _replay_file(Path(td), "A-078::attempt1", php_good)
+            info = mock_gen.generate(
+                {"alert_id": "A-078", "cwe": "CWE-78",
+                 "message": "shell_exec 命令注入告警", "line": 14},
+                {"ok": True, "language": "php", "snippet_file": "snippet.php",
+                 "sink_function": "ping_host"},
+                run_dir, backend="replay", replay_file=rf)
+            self.assertTrue(info["ok"], info.get("llm_error"))
+            self.assertEqual(info["generated_by"], "llm(replay)")
+            self.assertEqual(info["language"], "php")
+            self.assertIn("__mock_shell_exec", info["mock_code"])
+            self.assertTrue((run_dir / "mock_patch.php").exists())
+
 
 class TestVerdictGeneric(unittest.TestCase):
     RUN_OK = {"env_ok": True, "exit_code": 0,

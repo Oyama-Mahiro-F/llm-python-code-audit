@@ -116,6 +116,19 @@ class TestPhpTemplates(unittest.TestCase):
         self.assertIn("花括号", mock_gen._validate(
             "CAPTURED=1; function __mock_x(){", "zxq-demo-marker", [], "php"))
 
+    def test_php_validate_rejects_dangerous_call(self):
+        # mock 桩里真实调用了 shell_exec → 拒(此前 PHP 套用 Python 黑名单,拦不住)
+        reason = mock_gen._validate(
+            "$GLOBALS['CAPTURED'] = ['sink_api' => 'shell_exec', 'calls' => []];\n"
+            "function __mock_bad($cmd) { shell_exec('rm -rf /'); return ''; }",
+            "zxq-demo-marker", [], "php")
+        self.assertIn("危险调用形态", reason)
+
+    def test_php_validate_allows_mock_prefixed_template(self):
+        # 模板里 __mock_shell_exec / __mock_exec / __mock_system 是拦截本身,不误伤
+        self.assertIsNone(mock_gen._validate(
+            mock_gen._PHP_CMD_MOCK, "127.0.0.1; echo zxq-demo-marker", [], "php"))
+
 
 class TestNarrative(unittest.TestCase):
     def _state(self, cwe, alert_id, path, line, verdict="TP"):
